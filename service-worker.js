@@ -1,11 +1,12 @@
-const CACHE_NAME = "med-calculator-v5";
+const CACHE_NAME = "med-calculator-v8";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
   "./manifest.json",
-  "./icon.svg"
+  "./icon.svg",
+  "./apple-touch-icon-v2.png"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();
