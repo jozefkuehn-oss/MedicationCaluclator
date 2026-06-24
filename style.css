@@ -1,0 +1,104 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.header {
+  background: #0f172a;
+  color: white;
+  padding: 24px 20px;
+  border-radius: 0 0 18px 18px;
+  text-align: center;
+}
+.card {
+  background: white;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: bold;
+}
+input,
+select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  font-size: 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 12px;
+}
+.result {
+  background: #e2e8f0;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+.warning {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 20px;
+}
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.tab-button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #cbd5e1;
+  color: #0f172a;
+  font-weight: bold;
+}
+.tab-button.active {
+  background: #0f172a;
+  color: white;
+}
+.hidden {
+  display: none;
+}
+.status-ready {
+  color: #166534;
+  font-weight: bold;
+}
+.status-check {
+  color: #991b1b;
+  font-weight: bold;
+}
+.safety-ok {
+  color: #166534;
+  font-weight: bold;
+}
+.safety-warning {
+  color: #991b1b;
+  font-weight: bold;
+}
+.secondary-button {
+  background: #e2e8f0;
+  color: #0f172a;
+  margin-top: 10px;
+}
