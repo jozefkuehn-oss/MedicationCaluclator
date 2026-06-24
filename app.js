@@ -124,16 +124,29 @@ function runSafetyChecks(values, results) {
   } else {
     addCheck("ok", "VTBI check passed.");
   }
+if (values.infusionType === "Timed Dose") {
   if (values.duration === null || values.duration <= 0) {
-    addCheck("critical", "Desired duration is required.", "duration");
+    addCheck("critical", "Desired duration is required for timed doses.", "duration");
   } else {
     addCheck("ok", "Duration entered.");
   }
   if (!values.durationUnit) {
-    addCheck("critical", "Duration unit is required.", "durationUnit");
+    addCheck("critical", "Duration unit is required for timed doses.", "durationUnit");
   } else {
     addCheck("ok", "Duration unit selected.");
   }
+}
+if (values.infusionType === "Continuous") {
+  if (values.duration !== null && values.duration <= 0) {
+    addCheck("critical", "If entered, duration must be greater than zero.", "duration");
+  } else if (values.duration !== null && !values.durationUnit) {
+    addCheck("critical", "Duration unit is required when duration is entered.", "durationUnit");
+  } else if (values.duration !== null && values.durationUnit) {
+    addCheck("ok", "Optional duration entered for VTBI estimate.");
+  } else {
+    addCheck("ok", "Duration not required for continuous infusion.");
+  }
+}
   if (
     values.infusionType === "Continuous" &&
     ["mg/kg", "mcg/kg", "units/kg", "g", "mg", "mcg", "units"].includes(values.doseUnit)
@@ -285,15 +298,15 @@ function calculateInfusion() {
   let calculatedVtbi = null;
   let rate = null;
   if (values.infusionType === "Continuous") {
-    rate =
-      calculatedDose !== null && concentration
-        ? calculatedDose / concentration
-        : null;
-    calculatedVtbi =
-      rate !== null && values.duration !== null
-        ? rate * (values.durationUnit === "hr" ? values.duration : values.duration / 60)
-        : null;
-  } else {
+  rate =
+    calculatedDose !== null && concentration
+      ? calculatedDose / concentration
+      : null;
+  calculatedVtbi =
+    rate !== null && values.duration !== null && values.durationUnit
+      ? rate * (values.durationUnit === "hr" ? values.duration : values.duration / 60)
+      : null;
+} else {
     calculatedVtbi =
       calculatedDose !== null && concentration
         ? calculatedDose / concentration
@@ -352,7 +365,9 @@ if (hasCritical) {
   document.getElementById("rateResult").textContent =
     formatNumber(rate) + " mL/hr";
   document.getElementById("vtbiResult").textContent =
-    formatNumber(calculatedVtbi) + " mL";
+  values.infusionType === "Continuous" && calculatedVtbi === null
+    ? "Not calculated without duration"
+    : formatNumber(calculatedVtbi) + " mL";
 } else {
     clearCriticalScreenAlert();
 
@@ -368,7 +383,9 @@ if (hasCritical) {
   document.getElementById("rateResult").textContent =
     formatNumber(rate) + " mL/hr";
   document.getElementById("vtbiResult").textContent =
-    formatNumber(calculatedVtbi) + " mL";
+  values.infusionType === "Continuous" && calculatedVtbi === null
+    ? "Not calculated without duration"
+    : formatNumber(calculatedVtbi) + " mL";
 }
 document.getElementById("safetyResults").innerHTML = renderSafetyChecks(safetyChecks);
 }
@@ -450,7 +467,7 @@ function clearInfusion() {
   });
 
   clearCriticalScreenAlert();
-  
+
   document.getElementById("infusionType").value = "";
   updateDoseUnits();
   document.getElementById("doseUnit").value = "";
