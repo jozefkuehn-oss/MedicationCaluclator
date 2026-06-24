@@ -29,6 +29,12 @@ function updateDoseUnits() {
   const infusionType = document.getElementById("infusionType").value;
   const doseUnitSelect = document.getElementById("doseUnit");
   doseUnitSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select dose unit";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  doseUnitSelect.appendChild(placeholder);
   const unitList = infusionType === "Continuous" ? continuousUnits : timedDoseUnits;
   unitList.forEach(unit => {
     const option = document.createElement("option");
@@ -75,84 +81,173 @@ function calculateDoseMgHr(infusionType, weight, dose, doseUnit) {
 }
 function runSafetyChecks(values, results) {
   const checks = [];
+  function addCheck(severity, message, field = null) {
+    checks.push({ severity, message, field });
+  }
+  if (!values.infusionType) {
+    addCheck("critical", "Infusion type is required.", "infusionType");
+  } else {
+    addCheck("ok", "Infusion type selected.");
+  }
   if (values.weight === null || values.weight <= 0) {
-    checks.push("MISSING: WEIGHT");
+    addCheck("critical", "Patient weight is required.", "weight");
   } else {
-    checks.push("OK: Weight Check");
+    addCheck("ok", "Weight check passed.");
   }
-  if (values.dose === null) {
-    checks.push("MISSING: DOSE");
+  if (values.dose === null || values.dose <= 0) {
+    addCheck("critical", "Dose ordered is required.", "dose");
   } else {
-    checks.push("OK: Dose Check");
+    addCheck("ok", "Dose check passed.");
   }
-  if (values.drugAmount === null || values.totalVolume === null || values.totalVolume <= 0) {
-    checks.push("MISSING: MIX");
+  if (!values.doseUnit) {
+    addCheck("critical", "Dose unit is required.", "doseUnit");
   } else {
-    checks.push("OK: Mix/Concentration Check");
+    addCheck("ok", "Dose unit selected.");
   }
-  if (results.rate === null) {
-    checks.push("MISSING DATA: Rate Safety Check");
-  } else if (results.rate > 999) {
-    checks.push("WARNING: HIGH RATE");
+  if (values.drugAmount === null || values.drugAmount <= 0) {
+    addCheck("critical", "Drug amount in bag is required.", "drugAmount");
   } else {
-    checks.push("OK: Rate Safety Check");
+    addCheck("ok", "Drug amount entered.");
   }
-  if (
-    values.vtbi !== null &&
-    values.totalVolume !== null &&
-    values.vtbi > values.totalVolume
-  ) {
-    checks.push("INVALID: VTBI > VOLUME");
+  if (!values.drugUnit) {
+    addCheck("critical", "Drug unit is required.", "drugUnit");
   } else {
-    checks.push("OK: VTBI Check");
+    addCheck("ok", "Drug unit selected.");
+  }
+  if (values.totalVolume === null || values.totalVolume <= 0) {
+    addCheck("critical", "Total volume is required.", "totalVolume");
+  } else {
+    addCheck("ok", "Total volume entered.");
+  }
+  if (values.vtbi !== null && values.totalVolume !== null && values.vtbi > values.totalVolume) {
+    addCheck("critical", "VTBI cannot be greater than total bag volume.", "vtbi");
+  } else {
+    addCheck("ok", "VTBI check passed.");
+  }
+  if (values.duration === null || values.duration <= 0) {
+    addCheck("critical", "Desired duration is required.", "duration");
+  } else {
+    addCheck("ok", "Duration entered.");
+  }
+  if (!values.durationUnit) {
+    addCheck("critical", "Duration unit is required.", "durationUnit");
+  } else {
+    addCheck("ok", "Duration unit selected.");
   }
   if (
     values.infusionType === "Continuous" &&
-    ["mg/kg", "mcg/kg", "units/kg"].includes(values.doseUnit)
+    ["mg/kg", "mcg/kg", "units/kg", "g", "mg", "mcg", "units"].includes(values.doseUnit)
   ) {
-    checks.push("⚠ Unit does not match infusion type");
-  } else if (
+    addCheck("critical", "Dose unit does not match continuous infusion type.", "doseUnit");
+  }
+  if (
     values.infusionType === "Timed Dose" &&
-    ["mg/kg/min", "mg/kg/hr", "mcg/kg/min", "mcg/kg/hr"].includes(values.doseUnit)
+    ["mg/kg/min", "mg/kg/hr", "mcg/kg/min", "mcg/kg/hr", "units/kg/min", "units/kg/hr", "mcg/min", "mcg/hr", "mg/min", "mg/hr", "units/min", "units/hr"].includes(values.doseUnit)
   ) {
-    checks.push("⚠ Unit does not match infusion type");
-  } else {
-    checks.push("OK: Infusion Type Match");
+    addCheck("critical", "Dose unit does not match timed dose infusion type.", "doseUnit");
   }
-  if (values.doseUnit.includes("/kg") && (!values.weight || values.weight <= 0)) {
-    checks.push("⚠ Weight required for kg-based dosing");
-  } else {
-    checks.push("OK: Weight Dependency");
+  if (values.doseUnit && values.doseUnit.includes("/kg") && (!values.weight || values.weight <= 0)) {
+    addCheck("critical", "Weight is required for kg-based dosing.", "weight");
   }
-  if (values.infusionType === "Continuous" && values.doseUnit === "mg/min") {
-    checks.push("⚠ Consider using mg/hr for clarity");
+  if (results.rate === null || Number.isNaN(results.rate) || !Number.isFinite(results.rate)) {
+    addCheck("critical", "Pump rate could not be calculated. Check required inputs.");
+  } else if (results.rate > 999) {
+    addCheck("caution", "Pump rate is unusually high. Verify calculation and pump limits.", "duration");
   } else {
-    checks.push("OK: Time Logic");
+    addCheck("ok", "Rate safety check passed.");
   }
   if (
     results.concentration !== null &&
+    Number.isFinite(results.concentration) &&
     (results.concentration > 100 || results.concentration < 0.001)
   ) {
-    checks.push("⚠ Unusual concentration");
-  } else {
-    checks.push("OK: Concentration Range");
+    addCheck("caution", "Concentration is unusual. Verify drug amount and total volume.", "drugAmount");
+  } else if (results.concentration !== null) {
+    addCheck("ok", "Concentration range check passed.");
+  }
+  if (values.infusionType === "Continuous" && values.doseUnit === "mg/min") {
+    addCheck("caution", "Consider using mg/hr for clarity when documenting continuous infusions.", "doseUnit");
   }
   if (
     values.weight !== null &&
     ["mg/kg", "mcg/kg", "units/kg", "g/kg"].includes(values.doseUnit) &&
     values.dose > 10
   ) {
-    checks.push("⚠ Dose unusually high vs weight");
-  } else {
-    checks.push("OK: Dose/Weight Reasonableness");
+    addCheck("caution", "Dose may be unusually high for weight-based dosing. Verify order.", "dose");
   }
   const validUnits = [...timedDoseUnits, ...continuousUnits];
-  if (!validUnits.includes(values.doseUnit)) {
-    checks.push("⚠ Unit not recognized in system");
-  } else {
-    checks.push("OK: Unit Recognized");
+  if (values.doseUnit && !validUnits.includes(values.doseUnit)) {
+    addCheck("critical", "Dose unit is not recognized by the calculator.", "doseUnit");
   }
   return checks;
+}
+function triggerCriticalScreenAlert() {
+  const banner = document.getElementById("criticalTopBanner");
+  banner.classList.remove("hidden");
+  document.body.classList.remove("critical-alert-active");
+  // Restart the flash animation every time Calculate is pressed
+  void document.body.offsetWidth;
+  document.body.classList.add("critical-alert-active");
+}
+function clearCriticalScreenAlert() {
+  const banner = document.getElementById("criticalTopBanner");
+  banner.classList.add("hidden");
+  document.body.classList.remove("critical-alert-active");
+}
+function clearFieldHighlights() {
+  const fieldIds = [
+    "infusionType",
+    "weight",
+    "dose",
+    "doseUnit",
+    "drugAmount",
+    "drugUnit",
+    "totalVolume",
+    "vtbi",
+    "duration",
+    "durationUnit"
+  ];
+  fieldIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.classList.remove("input-error", "input-caution");
+    }
+  });
+}
+function applyFieldHighlights(checks) {
+  checks.forEach(check => {
+    if (!check.field) return;
+    const field = document.getElementById(check.field);
+    if (!field) return;
+    if (check.severity === "critical") {
+      field.classList.add("input-error");
+    }
+    if (check.severity === "caution") {
+      field.classList.add("input-caution");
+    }
+  });
+}
+function renderSafetyChecks(checks) {
+  const critical = checks.filter(check => check.severity === "critical");
+  const caution = checks.filter(check => check.severity === "caution");
+  const ok = checks.filter(check => check.severity === "ok");
+  let html = "";
+  if (critical.length > 0) {
+    html += `<div class="warning-group critical"><h4>🛑 Critical Issues</h4>`;
+    html += critical.map(check => `<div class="warning-item">${check.message}</div>`).join("");
+    html += `</div>`;
+  }
+  if (caution.length > 0) {
+    html += `<div class="warning-group caution"><h4>⚠ Cautions</h4>`;
+    html += caution.map(check => `<div class="warning-item">${check.message}</div>`).join("");
+    html += `</div>`;
+  }
+  if (critical.length === 0 && caution.length === 0) {
+    html += `<div class="warning-group ok"><h4>✅ No Calculator Issues Detected</h4>`;
+    html += `<div class="warning-item">Verify medication, concentration, dose, protocol, and pump settings before administration.</div>`;
+    html += `</div>`;
+  }
+  return html;
 }
 function formatNumber(value) {
   if (value === null || Number.isNaN(value) || !Number.isFinite(value)) {
@@ -215,15 +310,41 @@ function calculateInfusion() {
     calculatedVtbi
   };
   const safetyChecks = runSafetyChecks(values, results);
-  const hasIssue = safetyChecks.some(check => !check.startsWith("OK"));
+const hasCritical = safetyChecks.some(check => check.severity === "critical");
+const hasCaution = safetyChecks.some(check => check.severity === "caution");
 const statusResult = document.getElementById("statusResult");
-statusResult.textContent = hasIssue ? "CHECK INPUTS" : "READY";
+const resultsPanel = document.getElementById("infusionResultsPanel");
+const alertBanner = document.getElementById("alertBanner");
 statusResult.classList.remove("status-ready", "status-check");
-if (hasIssue) {
+resultsPanel.classList.remove("critical-panel", "caution-panel", "ready-panel", "warning-panel");
+alertBanner.classList.remove("neutral", "ready", "caution", "critical");
+clearFieldHighlights();
+applyFieldHighlights(safetyChecks);
+if (hasCritical) {
+  alertBanner.textContent = "🛑 DO NOT USE — CHECK INPUTS";
+  alertBanner.classList.add("critical");
+
+  triggerCriticalScreenAlert();
+
+  statusResult.textContent = "CALCULATION BLOCKED";
   statusResult.classList.add("status-check");
-} else {
-  statusResult.classList.add("status-ready");
-}
+  resultsPanel.classList.add("critical-panel");
+  document.getElementById("concentrationResult").innerHTML =
+    `<span class="locked-result">LOCKED</span>`;
+  document.getElementById("doseResult").innerHTML =
+    `<span class="locked-result">LOCKED</span>`;
+  document.getElementById("rateResult").innerHTML =
+    `<span class="locked-result">LOCKED</span>`;
+  document.getElementById("vtbiResult").innerHTML =
+    `<span class="locked-result">LOCKED</span>`;
+} else if (hasCaution) {
+    clearCriticalScreenAlert();
+
+  alertBanner.textContent = "⚠ VERIFY BEFORE USE";
+  alertBanner.classList.add("caution");
+  statusResult.textContent = "VERIFY BEFORE USE";
+  statusResult.classList.add("status-check");
+  resultsPanel.classList.add("caution-panel");
   document.getElementById("concentrationResult").textContent =
     formatNumber(concentration) + " mg/mL";
   document.getElementById("doseResult").textContent =
@@ -232,12 +353,24 @@ if (hasIssue) {
     formatNumber(rate) + " mL/hr";
   document.getElementById("vtbiResult").textContent =
     formatNumber(calculatedVtbi) + " mL";
-document.getElementById("safetyResults").innerHTML = safetyChecks
-  .map(check => {
-    const className = check.startsWith("OK") ? "safety-ok" : "safety-warning";
-    return `<div class="${className}">${check}</div>`;
-  })
-  .join("");
+} else {
+    clearCriticalScreenAlert();
+
+  alertBanner.textContent = "✅ READY TO VERIFY";
+  alertBanner.classList.add("ready");
+  statusResult.textContent = "READY TO VERIFY";
+  statusResult.classList.add("status-ready");
+  resultsPanel.classList.add("ready-panel");
+  document.getElementById("concentrationResult").textContent =
+    formatNumber(concentration) + " mg/mL";
+  document.getElementById("doseResult").textContent =
+    formatNumber(calculatedDose) + " mg/hr";
+  document.getElementById("rateResult").textContent =
+    formatNumber(rate) + " mL/hr";
+  document.getElementById("vtbiResult").textContent =
+    formatNumber(calculatedVtbi) + " mL";
+}
+document.getElementById("safetyResults").innerHTML = renderSafetyChecks(safetyChecks);
 }
 document.getElementById("infusionType").addEventListener("change", updateDoseUnits);
 document.getElementById("calculateInfusion").addEventListener("click", calculateInfusion);
@@ -315,12 +448,29 @@ function clearInfusion() {
   fields.forEach(id => {
     document.getElementById(id).value = "";
   });
-  document.getElementById("infusionType").value = "Timed Dose";
+
+  clearCriticalScreenAlert();
+  
+  document.getElementById("infusionType").value = "";
   updateDoseUnits();
-  document.getElementById("drugUnit").value = "g";
-  document.getElementById("durationUnit").value = "hr";
-  document.getElementById("statusResult").textContent = "Waiting for inputs";
-  document.getElementById("statusResult").classList.remove("status-ready", "status-check");
+  document.getElementById("doseUnit").value = "";
+  document.getElementById("drugUnit").value = "";
+  document.getElementById("durationUnit").value = "";
+  const statusResult = document.getElementById("statusResult");
+  const resultsPanel = document.getElementById("infusionResultsPanel");
+  const alertBanner = document.getElementById("alertBanner");
+  statusResult.textContent = "Waiting for inputs";
+  statusResult.classList.remove("status-ready", "status-check");
+  alertBanner.textContent = "Waiting for inputs";
+  alertBanner.classList.remove("ready", "caution", "critical");
+  alertBanner.classList.add("neutral");
+  resultsPanel.classList.remove(
+    "warning-panel",
+    "ready-panel",
+    "critical-panel",
+    "caution-panel"
+  );
+  clearFieldHighlights();
   document.getElementById("concentrationResult").textContent = "--";
   document.getElementById("doseResult").textContent = "--";
   document.getElementById("rateResult").textContent = "--";
@@ -336,8 +486,8 @@ function clearDraw() {
   fields.forEach(id => {
     document.getElementById(id).value = "";
   });
-  document.getElementById("orderedDoseUnit").value = "mg/kg";
-  document.getElementById("concentrationUnit").value = "mg/mL";
+  document.getElementById("orderedDoseUnit").value = "";
+  document.getElementById("concentrationUnit").value = "";
   document.getElementById("drawResult").textContent = "--";
 }
 document.getElementById("clearInfusion").addEventListener("click", clearInfusion);

@@ -11,6 +11,10 @@
 <meta name="theme-color" content="#0f172a" />
 </head>
 <body>
+    <div id="criticalTopBanner" class="critical-top-banner hidden">
+  🛑 DO NOT USE — CHECK INPUTS
+</div>
+
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
@@ -24,9 +28,10 @@
       <h2>Infusion Calculator</h2>
       <label for="infusionType">Infusion Type</label>
       <select id="infusionType">
-        <option value="Timed Dose">Timed Dose</option>
-        <option value="Continuous">Continuous</option>
-      </select>
+  <option value="" disabled selected>Select infusion type</option>
+  <option value="Timed Dose">Timed Dose</option>
+  <option value="Continuous">Continuous</option>
+</select>
       <label for="weight">Patient Weight (kg)</label>
       <input type="number" id="weight" placeholder="Example: 70" />
       <label for="dose">Dose Ordered</label>
@@ -37,11 +42,12 @@
       <input type="number" id="drugAmount" placeholder="Example: 1000" />
       <label for="drugUnit">Drug Unit</label>
       <select id="drugUnit">
-        <option value="g">g</option>
-        <option value="mg">mg</option>
-        <option value="mcg">mcg</option>
-        <option value="units">units</option>
-      </select>
+  <option value="" disabled selected>Select drug unit</option>
+  <option value="g">g</option>
+  <option value="mg">mg</option>
+  <option value="mcg">mcg</option>
+  <option value="units">units</option>
+</select>
       <label for="totalVolume">Total Volume (mL)</label>
       <input type="number" id="totalVolume" placeholder="Example: 100" />
       <label for="vtbi">VTBI Desired</label>
@@ -50,19 +56,23 @@
       <input type="number" id="duration" placeholder="Example: 60" />
       <label for="durationUnit">Duration Unit</label>
       <select id="durationUnit">
-        <option value="min">min</option>
-        <option value="hr">hr</option>
-      </select>
+  <option value="" disabled selected>Select duration unit</option>
+  <option value="min">min</option>
+  <option value="hr">hr</option>
+</select>
       <button id="calculateInfusion">Calculate Infusion</button>
       <button id="clearInfusion" class="secondary-button">Clear</button>
-      <div class="result">
-        <h3>Results</h3>
-        <p><strong>Status:</strong> <span id="statusResult">Waiting for inputs</span></p>
-        <p><strong>Concentration:</strong> <span id="concentrationResult">--</span></p>
-        <p><strong>Dose:</strong> <span id="doseResult">--</span></p>
-        <p><strong>Pump Rate:</strong> <span id="rateResult">--</span></p>
-        <p><strong>VTBI:</strong> <span id="vtbiResult">--</span></p>
-      </div>
+      <div class="result" id="infusionResultsPanel">
+  <div id="alertBanner" class="alert-banner neutral">
+    Waiting for inputs
+  </div>
+  <h3>Results</h3>
+  <p><strong>Status:</strong> <span id="statusResult">Waiting for inputs</span></p>
+  <p><strong>Concentration:</strong> <span id="concentrationResult">--</span></p>
+  <p><strong>Dose:</strong> <span id="doseResult">--</span></p>
+  <p><strong>Pump Rate:</strong> <span id="rateResult">--</span></p>
+  <p><strong>VTBI:</strong> <span id="vtbiResult">--</span></p>
+</div>
       <div class="result">
         <h3>Safety Checks</h3>
         <p id="safetyResults">Safety checks will appear here.</p>
@@ -79,27 +89,32 @@
   <input type="number" id="orderedDose" placeholder="Example: 0.3" />
   <label for="orderedDoseUnit">Ordered Dose Unit</label>
   <select id="orderedDoseUnit">
-    <option value="mg/kg">mg/kg</option>
-    <option value="mcg/kg">mcg/kg</option>
-    <option value="units/kg">units/kg</option>
-    <option value="g">g</option>
-    <option value="mg">mg</option>
-    <option value="mcg">mcg</option>
-    <option value="units">units</option>
-  </select>
+  <option value="" disabled selected>Select ordered dose unit</option>
+  <option value="mg/kg">mg/kg</option>
+  <option value="mcg/kg">mcg/kg</option>
+  <option value="units/kg">units/kg</option>
+  <option value="g">g</option>
+  <option value="mg">mg</option>
+  <option value="mcg">mcg</option>
+  <option value="units">units</option>
+</select>
   <label for="vialConcentration">Vial Concentration</label>
   <input type="number" id="vialConcentration" placeholder="Example: 1" />
   <label for="concentrationUnit">Concentration Unit</label>
   <select id="concentrationUnit">
-    <option value="mg/mL">mg/mL</option>
-    <option value="mcg/mL">mcg/mL</option>
-    <option value="units/mL">units/mL</option>
-  </select>
+  <option value="" disabled selected>Select concentration unit</option>
+  <option value="mg/mL">mg/mL</option>
+  <option value="mcg/mL">mcg/mL</option>
+  <option value="units/mL">units/mL</option>
+</select>
   <button id="calculateDraw">Calculate Draw-Up</button>
   <button id="clearDraw" class="secondary-button">Clear</button>
-  <div class="result">
-    <h3>Result</h3>
-    <p><strong>Volume to Draw:</strong> <span id="drawResult">--</span></p>
+  <div class="result" id="infusionResultsPanel">
+  <div id="alertBanner" class="alert-banner neutral">
+    Waiting for inputs
+  </div>
+  <h3>Results</h3>
+  <p><strong>Status:</strong> <span id="statusResult">Waiting for inputs</span></p>
   </div>
   <p class="warning">
     Confirm vial concentration, ordered dose, and local protocol before administration.
