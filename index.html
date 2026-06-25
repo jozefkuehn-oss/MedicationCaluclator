@@ -18,7 +18,7 @@
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
-    <p style="font-size: 12px; opacity: 0.8;">Version 2.0</p>
+    <p style="font-size: 12px; opacity: 0.8;">Version 1.0.3</p>
   </div>
 <main class="app">
     <div class="tabs">
@@ -53,7 +53,7 @@
       <input type="number" id="totalVolume" placeholder="Example: 100" />
       <label for="vtbi">VTBI Desired</label>
       <input type="number" id="vtbi" placeholder="Example: 100" />
-      <label for="duration">Desired Duration</label>
+      <label for="duration">Desired Duration <spam class=optional-note">(optional for continuous)</spam></label>
       <input type="number" id="duration" placeholder="Example: 60" />
       <label for="durationUnit">Duration Unit</label>
       <select id="durationUnit">
@@ -90,32 +90,29 @@
   <input type="number" id="orderedDose" placeholder="Example: 0.3" />
   <label for="orderedDoseUnit">Ordered Dose Unit</label>
   <select id="orderedDoseUnit">
-  <option value="" disabled selected>Select ordered dose unit</option>
-  <option value="mg/kg">mg/kg</option>
-  <option value="mcg/kg">mcg/kg</option>
-  <option value="units/kg">units/kg</option>
-  <option value="g">g</option>
-  <option value="mg">mg</option>
-  <option value="mcg">mcg</option>
-  <option value="units">units</option>
-</select>
+    <option value="" disabled selected>Select ordered dose unit</option>
+    <option value="mg/kg">mg/kg</option>
+    <option value="mcg/kg">mcg/kg</option>
+    <option value="units/kg">units/kg</option>
+    <option value="g">g</option>
+    <option value="mg">mg</option>
+    <option value="mcg">mcg</option>
+    <option value="units">units</option>
+  </select>
   <label for="vialConcentration">Vial Concentration</label>
   <input type="number" id="vialConcentration" placeholder="Example: 1" />
   <label for="concentrationUnit">Concentration Unit</label>
   <select id="concentrationUnit">
-  <option value="" disabled selected>Select concentration unit</option>
-  <option value="mg/mL">mg/mL</option>
-  <option value="mcg/mL">mcg/mL</option>
-  <option value="units/mL">units/mL</option>
-</select>
+    <option value="" disabled selected>Select concentration unit</option>
+    <option value="mg/mL">mg/mL</option>
+    <option value="mcg/mL">mcg/mL</option>
+    <option value="units/mL">units/mL</option>
+  </select>
   <button id="calculateDraw">Calculate Draw-Up</button>
   <button id="clearDraw" class="secondary-button">Clear</button>
-  <div class="result" id="infusionResultsPanel">
-  <div id="alertBanner" class="alert-banner neutral">
-    Waiting for inputs
-  </div>
-  <h3>Results</h3>
-  <p><strong>Status:</strong> <span id="statusResult">Waiting for inputs</span></p>
+  <div class="result" id="drawResultsPanel">
+    <h3>Result</h3>
+    <p><strong>Volume to Draw:</strong> <span id="drawResult">--</span></p>
   </div>
   <p class="warning">
     Confirm vial concentration, ordered dose, and local protocol before administration.

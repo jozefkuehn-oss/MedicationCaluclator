@@ -393,18 +393,27 @@ document.getElementById("infusionType").addEventListener("change", updateDoseUni
 document.getElementById("calculateInfusion").addEventListener("click", calculateInfusion);
 updateDoseUnits();
 function calculateDrawDoseMg(weight, dose, unit) {
-  if (dose === null) return null;
+  if (dose === null || dose <= 0 || !unit) return null;
   if (unit === "g") return dose * 1000;
   if (unit === "mg") return dose;
   if (unit === "mcg") return dose / 1000;
   if (unit === "units") return dose;
-  if (unit === "mg/kg") return weight * dose;
-  if (unit === "mcg/kg") return (weight * dose) / 1000;
-  if (unit === "units/kg") return weight * dose;
+  if (unit === "mg/kg") {
+    if (weight === null || weight <= 0) return null;
+    return weight * dose;
+  }
+  if (unit === "mcg/kg") {
+    if (weight === null || weight <= 0) return null;
+    return (weight * dose) / 1000;
+  }
+  if (unit === "units/kg") {
+    if (weight === null || weight <= 0) return null;
+    return weight * dose;
+  }
   return null;
 }
 function calculateConcentrationMgPerMl(concentration, unit) {
-  if (concentration === null) return null;
+  if (concentration === null || concentration <= 0 || !unit) return null;
   if (unit === "mg/mL") return concentration;
   if (unit === "mcg/mL") return concentration / 1000;
   if (unit === "units/mL") return concentration;
@@ -416,17 +425,40 @@ function calculateDrawUp() {
   const doseUnit = document.getElementById("orderedDoseUnit").value;
   const vialConcentration = getNumber("vialConcentration");
   const concentrationUnit = document.getElementById("concentrationUnit").value;
+  const drawResult = document.getElementById("drawResult");
+  if (dose === null || dose <= 0) {
+    drawResult.textContent = "Enter ordered dose";
+    return;
+  }
+  if (!doseUnit) {
+    drawResult.textContent = "Select ordered dose unit";
+    return;
+  }
+  if (doseUnit.includes("/kg") && (weight === null || weight <= 0)) {
+    drawResult.textContent = "Enter patient weight";
+    return;
+  }
+  if (vialConcentration === null || vialConcentration <= 0) {
+    drawResult.textContent = "Enter vial concentration";
+    return;
+  }
+  if (!concentrationUnit) {
+    drawResult.textContent = "Select concentration unit";
+    return;
+  }
   const doseMg = calculateDrawDoseMg(weight, dose, doseUnit);
   const concentrationMgMl = calculateConcentrationMgPerMl(
     vialConcentration,
     concentrationUnit
   );
   const volume =
-    doseMg !== null && concentrationMgMl
+    doseMg !== null && concentrationMgMl !== null
       ? doseMg / concentrationMgMl
       : null;
-  document.getElementById("drawResult").textContent =
-    formatNumber(volume) + " mL";
+  drawResult.textContent =
+    volume !== null && Number.isFinite(volume)
+      ? formatNumber(volume) + " mL"
+      : "Unable to calculate";
 }
 document.getElementById("calculateDraw").addEventListener("click", calculateDrawUp);
 function showSection(section) {
@@ -507,5 +539,6 @@ function clearDraw() {
   document.getElementById("concentrationUnit").value = "";
   document.getElementById("drawResult").textContent = "--";
 }
+document.getElementById("calculateDraw").addEventListener("click", calculateDrawup);
 document.getElementById("clearInfusion").addEventListener("click", clearInfusion);
 document.getElementById("clearDraw").addEventListener("click", clearDraw);
