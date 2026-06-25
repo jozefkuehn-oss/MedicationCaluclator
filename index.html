@@ -18,13 +18,14 @@
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
-    <p style="font-size: 12px; opacity: 0.8;">Version 1.0.4</p>
+    <p style="font-size: 12px; opacity: 0.8;">Version 1.1.0</p>
   </div>
 <main class="app">
     <div class="tabs">
-      <button class="tab-button active" id="showInfusion">Infusion</button>
-      <button class="tab-button" id="showDraw">Draw-Up</button>
-    </div>
+  <button class="tab-button active" id="showInfusion">Infusion</button>
+  <button class="tab-button" id="showDraw">Draw-Up</button>
+  <button class="tab-button" id="showEMS">EMS Drip</button>
+</div>
     <section class="card" id="infusionSection">
       <h2>Infusion Calculator</h2>
       <label for="infusionType">Infusion Type</label>
@@ -117,6 +118,88 @@
   </div>
   <p class="warning">
     Confirm vial concentration, ordered dose, and local protocol before administration.
+  </p>
+</section>
+<section class="card hidden" id="emsSection">
+  <h2>EMS Drip Calculator</h2>
+
+  <label for="emsInfusionType">Infusion Type</label>
+  <select id="emsInfusionType">
+    <option value="" disabled selected>Select infusion type</option>
+    <option value="Timed Dose">Timed Dose</option>
+    <option value="Continuous">Continuous</option>
+  </select>
+
+  <label for="emsWeight">Patient Weight (kg)</label>
+  <input type="number" id="emsWeight" placeholder="Example: 70" />
+
+  <label for="emsDose">Dose Ordered</label>
+  <input type="number" id="emsDose" placeholder="Example: 5" />
+
+  <label for="emsDoseUnit">Dose Unit</label>
+  <select id="emsDoseUnit"></select>
+
+  <label for="emsDrugAmount">Drug Amount in Bag</label>
+  <input type="number" id="emsDrugAmount" placeholder="Example: 400" />
+
+  <label for="emsDrugUnit">Drug Unit</label>
+  <select id="emsDrugUnit">
+    <option value="" disabled selected>Select drug unit</option>
+    <option value="g">g</option>
+    <option value="mg">mg</option>
+    <option value="mcg">mcg</option>
+    <option value="units">units</option>
+  </select>
+
+  <label for="emsTotalVolume">Total Volume (mL)</label>
+  <input type="number" id="emsTotalVolume" placeholder="Example: 250" />
+
+  <label for="emsVtbi">VTBI Desired</label>
+  <input type="number" id="emsVtbi" placeholder="Example: 250" />
+
+  <label for="emsDuration">
+    Desired Duration <span class="optional-note">(optional for continuous)</span>
+  </label>
+  <input type="number" id="emsDuration" placeholder="Example: 60" />
+
+  <label for="emsDurationUnit">Duration Unit</label>
+  <select id="emsDurationUnit">
+    <option value="" disabled selected>Select duration unit</option>
+    <option value="hr">hr</option>
+    <option value="min">min</option>
+  </select>
+
+  <label for="emsDripSet">Drip Set</label>
+  <select id="emsDripSet">
+    <option value="" disabled selected>Select drip set</option>
+    <option value="10">10 gtts/mL</option>
+    <option value="15">15 gtts/mL</option>
+    <option value="60">60 gtts/mL</option>
+  </select>
+
+  <button id="calculateEMS">Calculate EMS Drip</button>
+  <button id="clearEMS" class="secondary-button">Clear</button>
+
+  <div class="result" id="emsResultsPanel">
+    <h3>EMS Results</h3>
+    <p><strong>Status:</strong> <span id="emsStatusResult">Waiting for inputs</span></p>
+    <p><strong>Concentration:</strong> <span id="emsConcentrationResult">--</span></p>
+    <p><strong>Dose:</strong> <span id="emsDoseResult">--</span></p>
+    <p><strong>Pump Equivalent:</strong> <span id="emsRateResult">--</span></p>
+    <p><strong>EMS Flow Rate:</strong> <span id="emsMlMinResult">--</span></p>
+    <p><strong>Drip Rate:</strong> <span id="emsGttsMinResult">--</span></p>
+    <p><strong>Drops/Sec:</strong> <span id="emsGttsSecResult">--</span></p>
+    <p class="practical-count"><strong>Practical Count:</strong> <span id="emsPracticalResult">--</span></p>
+    <p><strong>VTBI:</strong> <span id="emsVtbiResult">--</span></p>
+  </div>
+
+  <div class="result" id="emsSafetyPanel">
+    <h3>EMS Safety Checks</h3>
+    <p id="emsSafetyResults">Safety checks will appear here.</p>
+  </div>
+
+  <p class="warning">
+    Gravity drip rates are estimates. Verify medication, concentration, drip factor, dose, patient condition, and local protocol.
   </p>
 </section>
 </main>

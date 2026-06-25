@@ -43,6 +43,32 @@ function updateDoseUnits() {
     doseUnitSelect.appendChild(option);
   });
 }
+function updateEmsDoseUnits() {
+  const infusionType = document.getElementById("emsInfusionType").value;
+  const doseUnitSelect = document.getElementById("emsDoseUnit");
+
+  doseUnitSelect.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select dose unit";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  doseUnitSelect.appendChild(placeholder);
+
+  if (!infusionType) {
+    return;
+  }
+
+  const unitList = infusionType === "Continuous" ? continuousUnits : timedDoseUnits;
+
+  unitList.forEach(unit => {
+    const option = document.createElement("option");
+    option.value = unit;
+    option.textContent = unit;
+    doseUnitSelect.appendChild(option);
+  });
+}
 function standardizeDrugAmountToMg(amount, unit) {
   if (amount === null) return null;
   if (unit === "mg") return amount;
@@ -465,22 +491,481 @@ function calculateDrawUp() {
 }
 }
 document.getElementById("calculateDraw").addEventListener("click", calculateDrawUp);
+function calculateGravityDrip(rateMlHr, dripFactor) {
+  if (rateMlHr === null || !Number.isFinite(rateMlHr) || rateMlHr <= 0) {
+    return null;
+  }
+
+  const mlMin = rateMlHr / 60;
+  const gttsMin = mlMin * dripFactor;
+  const gttsSec = gttsMin / 60;
+
+  return {
+    mlMin,
+    gttsMin,
+    gttsSec,
+    practicalCount: getPracticalDropCount(gttsSec)
+  };
+}
+
+function getPracticalDropCount(gttsSec) {
+  if (!gttsSec || gttsSec <= 0 || !Number.isFinite(gttsSec)) {
+    return "--";
+  }
+
+  if (gttsSec < 1) {
+    const secondsPerDrop = Math.round(1 / gttsSec);
+    return `1 drop every ${secondsPerDrop} seconds`;
+  }
+
+  if (gttsSec >= 1 && gttsSec < 2) {
+    const dropsEveryTwoSeconds = Math.round(gttsSec * 2);
+
+    if (dropsEveryTwoSeconds <= 2) {
+      return "1 drop every second";
+    }
+
+    return `${dropsEveryTwoSeconds} drops every 2 seconds`;
+  }
+
+  const dropsPerSecond = Math.round(gttsSec);
+  return `${dropsPerSecond} drops every second`;
+}
+
+function runEmsSafetyChecks(values, results, drip) {
+  const checks = [];
+
+  function addCheck(severity, message, field = null) {
+    checks.push({ severity, message, field });
+  }
+
+  if (!values.infusionType) {
+    addCheck("critical", "Infusion type is required.", "emsInfusionType");
+  } else {
+    addCheck("ok", "Infusion type selected.");
+  }
+
+  if (values.weight === null || values.weight <= 0) {
+    addCheck("critical", "Patient weight is required.", "emsWeight");
+  } else {
+    addCheck("ok", "Weight check passed.");
+  }
+
+  if (values.dose === null || values.dose <= 0) {
+    addCheck("critical", "Dose ordered is required.", "emsDose");
+  } else {
+    addCheck("ok", "Dose check passed.");
+  }
+
+  if (!values.doseUnit) {
+    addCheck("critical", "Dose unit is required.", "emsDoseUnit");
+  } else {
+    addCheck("ok", "Dose unit selected.");
+  }
+
+  if (values.drugAmount === null || values.drugAmount <= 0) {
+    addCheck("critical", "Drug amount in bag is required.", "emsDrugAmount");
+  } else {
+    addCheck("ok", "Drug amount entered.");
+  }
+
+  if (!values.drugUnit) {
+    addCheck("critical", "Drug unit is required.", "emsDrugUnit");
+  } else {
+    addCheck("ok", "Drug unit selected.");
+  }
+
+  if (values.totalVolume === null || values.totalVolume <= 0) {
+    addCheck("critical", "Total volume is required.", "emsTotalVolume");
+  } else {
+    addCheck("ok", "Total volume entered.");
+  }
+
+  if (values.vtbi !== null && values.totalVolume !== null && values.vtbi > values.totalVolume) {
+    addCheck("critical", "VTBI cannot be greater than total bag volume.", "emsVtbi");
+  } else {
+    addCheck("ok", "VTBI check passed.");
+  }
+
+  if (!values.dripSet) {
+    addCheck("critical", "Drip set is required.", "emsDripSet");
+  } else {
+    addCheck("ok", "Drip set selected.");
+  }
+
+  if (values.infusionType === "Timed Dose") {
+    if (values.duration === null || values.duration <= 0) {
+      addCheck("critical", "Desired duration is required for timed doses.", "emsDuration");
+    } else {
+      addCheck("ok", "Duration entered.");
+    }
+
+    if (!values.durationUnit) {
+      addCheck("critical", "Duration unit is required for timed doses.", "emsDurationUnit");
+    } else {
+      addCheck("ok", "Duration unit selected.");
+    }
+  }
+
+  if (values.infusionType === "Continuous") {
+    if (values.duration !== null && values.duration <= 0) {
+      addCheck("critical", "If entered, duration must be greater than zero.", "emsDuration");
+    } else if (values.duration !== null && !values.durationUnit) {
+      addCheck("critical", "Duration unit is required when duration is entered.", "emsDurationUnit");
+    } else if (values.duration !== null && values.durationUnit) {
+      addCheck("ok", "Optional duration entered for VTBI estimate.");
+    } else {
+      addCheck("ok", "Duration not required for continuous infusion.");
+    }
+  }
+
+  if (
+    values.infusionType === "Continuous" &&
+    ["mg/kg", "mcg/kg", "units/kg", "g", "mg", "mcg", "units"].includes(values.doseUnit)
+  ) {
+    addCheck("critical", "Dose unit does not match continuous infusion type.", "emsDoseUnit");
+  }
+
+  if (
+    values.infusionType === "Timed Dose" &&
+    ["mg/kg/min", "mg/kg/hr", "mcg/kg/min", "mcg/kg/hr", "units/kg/min", "units/kg/hr", "mcg/min", "mcg/hr", "mg/min", "mg/hr", "units/min", "units/hr"].includes(values.doseUnit)
+  ) {
+    addCheck("critical", "Dose unit does not match timed dose infusion type.", "emsDoseUnit");
+  }
+
+  if (values.doseUnit && values.doseUnit.includes("/kg") && (!values.weight || values.weight <= 0)) {
+    addCheck("critical", "Weight is required for kg-based dosing.", "emsWeight");
+  }
+
+  if (results.rate === null || Number.isNaN(results.rate) || !Number.isFinite(results.rate)) {
+    addCheck("critical", "Flow rate could not be calculated. Check required inputs.");
+  } else if (results.rate > 999) {
+    addCheck("caution", "mL/hr equivalent is unusually high. Verify calculation.", "emsDuration");
+  } else {
+    addCheck("ok", "Rate safety check passed.");
+  }
+
+  if (
+    results.concentration !== null &&
+    Number.isFinite(results.concentration) &&
+    (results.concentration > 100 || results.concentration < 0.001)
+  ) {
+    addCheck("caution", "Concentration is unusual. Verify drug amount and total volume.", "emsDrugAmount");
+  } else if (results.concentration !== null) {
+    addCheck("ok", "Concentration range check passed.");
+  }
+
+  if (values.infusionType === "Continuous" && values.doseUnit === "mg/min") {
+    addCheck("caution", "Consider using mg/hr for clarity when documenting continuous infusions.", "emsDoseUnit");
+  }
+
+  if (
+    values.weight !== null &&
+    ["mg/kg", "mcg/kg", "units/kg", "g/kg"].includes(values.doseUnit) &&
+    values.dose > 10
+  ) {
+    addCheck("caution", "Dose may be unusually high for weight-based dosing. Verify order.", "emsDose");
+  }
+
+  if (drip) {
+    if (drip.gttsMin < 5) {
+      addCheck("caution", "Drip rate is very slow and may be difficult to maintain accurately by gravity.", "emsDripSet");
+    }
+
+    if (drip.gttsMin > 120) {
+      addCheck("caution", "Drip rate is very fast and may be difficult to control accurately by gravity.", "emsDripSet");
+    }
+
+    if (drip.gttsSec < 0.25) {
+      addCheck("caution", "Drop timing is very slow. Consider whether gravity drip is practical.", "emsDripSet");
+    }
+
+    if (drip.gttsSec > 3) {
+      addCheck("caution", "Drop timing is very fast. Consider pump use if available.", "emsDripSet");
+    }
+  }
+
+  return checks;
+}
+
+function clearEmsFieldHighlights() {
+  const fieldIds = [
+    "emsInfusionType",
+    "emsWeight",
+    "emsDose",
+    "emsDoseUnit",
+    "emsDrugAmount",
+    "emsDrugUnit",
+    "emsTotalVolume",
+    "emsVtbi",
+    "emsDuration",
+    "emsDurationUnit",
+    "emsDripSet"
+  ];
+
+  fieldIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.classList.remove("input-error", "input-caution");
+    }
+  });
+}
+
+function applyEmsFieldHighlights(checks) {
+  checks.forEach(check => {
+    if (!check.field) return;
+
+    const field = document.getElementById(check.field);
+    if (!field) return;
+
+    if (check.severity === "critical") {
+      field.classList.add("input-error");
+    }
+
+    if (check.severity === "caution") {
+      field.classList.add("input-caution");
+    }
+  });
+}
+function calculateEMS() {
+  const values = {
+    infusionType: document.getElementById("emsInfusionType").value,
+    weight: getNumber("emsWeight"),
+    dose: getNumber("emsDose"),
+    doseUnit: document.getElementById("emsDoseUnit").value,
+    drugAmount: getNumber("emsDrugAmount"),
+    drugUnit: document.getElementById("emsDrugUnit").value,
+    totalVolume: getNumber("emsTotalVolume"),
+    vtbi: getNumber("emsVtbi"),
+    duration: getNumber("emsDuration"),
+    durationUnit: document.getElementById("emsDurationUnit").value,
+    dripSet: Number(document.getElementById("emsDripSet").value)
+  };
+
+  const drugAmountStandardized = standardizeDrugAmountToMg(
+    values.drugAmount,
+    values.drugUnit
+  );
+
+  const concentration =
+    drugAmountStandardized !== null && values.totalVolume
+      ? drugAmountStandardized / values.totalVolume
+      : null;
+
+  const calculatedDose = calculateDoseMgHr(
+    values.infusionType,
+    values.weight,
+    values.dose,
+    values.doseUnit
+  );
+
+  let calculatedVtbi = null;
+  let rate = null;
+
+  if (values.infusionType === "Continuous") {
+    rate =
+      calculatedDose !== null && concentration
+        ? calculatedDose / concentration
+        : null;
+
+    calculatedVtbi =
+      rate !== null && values.duration !== null && values.durationUnit
+        ? rate * (values.durationUnit === "hr" ? values.duration : values.duration / 60)
+        : null;
+  } else {
+    calculatedVtbi =
+      calculatedDose !== null && concentration
+        ? calculatedDose / concentration
+        : null;
+
+    rate =
+      calculatedVtbi !== null && values.duration
+        ? calculatedVtbi / (values.durationUnit === "hr" ? values.duration : values.duration / 60)
+        : null;
+  }
+
+  const drip = calculateGravityDrip(rate, values.dripSet);
+
+  const results = {
+    concentration,
+    calculatedDose,
+    rate,
+    calculatedVtbi
+  };
+
+  const safetyChecks = runEmsSafetyChecks(values, results, drip);
+  const hasCritical = safetyChecks.some(check => check.severity === "critical");
+  const hasCaution = safetyChecks.some(check => check.severity === "caution");
+
+  const status = document.getElementById("emsStatusResult");
+  const resultsPanel = document.getElementById("emsResultsPanel");
+
+  status.classList.remove("ems-ready", "ems-caution", "ems-warning");
+  resultsPanel.classList.remove("critical-panel", "caution-panel", "ready-panel");
+
+  clearEmsFieldHighlights();
+  applyEmsFieldHighlights(safetyChecks);
+
+  if (hasCritical) {
+    triggerCriticalScreenAlert();
+
+    status.textContent = "CALCULATION BLOCKED";
+    status.classList.add("ems-warning");
+    resultsPanel.classList.add("critical-panel");
+
+    document.getElementById("emsConcentrationResult").textContent = "LOCKED";
+    document.getElementById("emsDoseResult").textContent = "LOCKED";
+    document.getElementById("emsRateResult").textContent = "LOCKED";
+    document.getElementById("emsMlMinResult").textContent = "LOCKED";
+    document.getElementById("emsGttsMinResult").textContent = "LOCKED";
+    document.getElementById("emsGttsSecResult").textContent = "LOCKED";
+    document.getElementById("emsPracticalResult").textContent = "LOCKED";
+    document.getElementById("emsVtbiResult").textContent = "LOCKED";
+  } else if (hasCaution) {
+    clearCriticalScreenAlert();
+
+    status.textContent = "VERIFY BEFORE USE";
+    status.classList.add("ems-caution");
+    resultsPanel.classList.add("caution-panel");
+
+    document.getElementById("emsConcentrationResult").textContent =
+      formatNumber(concentration) + " mg/mL";
+
+    document.getElementById("emsDoseResult").textContent =
+      formatNumber(calculatedDose) + " mg/hr";
+
+    document.getElementById("emsRateResult").textContent =
+      formatNumber(rate) + " mL/hr";
+
+    document.getElementById("emsMlMinResult").textContent =
+      drip ? formatNumber(drip.mlMin) + " mL/min" : "--";
+
+    document.getElementById("emsGttsMinResult").textContent =
+      drip ? formatNumber(drip.gttsMin) + " gtts/min" : "--";
+
+    document.getElementById("emsGttsSecResult").textContent =
+      drip ? formatNumber(drip.gttsSec) + " gtts/sec" : "--";
+
+    document.getElementById("emsPracticalResult").textContent =
+      drip ? drip.practicalCount : "--";
+
+    document.getElementById("emsVtbiResult").textContent =
+      values.infusionType === "Continuous" && calculatedVtbi === null
+        ? "Not calculated without duration"
+        : formatNumber(calculatedVtbi) + " mL";
+  } else {
+    clearCriticalScreenAlert();
+
+    status.textContent = "READY TO VERIFY";
+    status.classList.add("ems-ready");
+    resultsPanel.classList.add("ready-panel");
+
+    document.getElementById("emsConcentrationResult").textContent =
+      formatNumber(concentration) + " mg/mL";
+
+    document.getElementById("emsDoseResult").textContent =
+      formatNumber(calculatedDose) + " mg/hr";
+
+    document.getElementById("emsRateResult").textContent =
+      formatNumber(rate) + " mL/hr";
+
+    document.getElementById("emsMlMinResult").textContent =
+      drip ? formatNumber(drip.mlMin) + " mL/min" : "--";
+
+    document.getElementById("emsGttsMinResult").textContent =
+      drip ? formatNumber(drip.gttsMin) + " gtts/min" : "--";
+
+    document.getElementById("emsGttsSecResult").textContent =
+      drip ? formatNumber(drip.gttsSec) + " gtts/sec" : "--";
+
+    document.getElementById("emsPracticalResult").textContent =
+      drip ? drip.practicalCount : "--";
+
+    document.getElementById("emsVtbiResult").textContent =
+      values.infusionType === "Continuous" && calculatedVtbi === null
+        ? "Not calculated without duration"
+        : formatNumber(calculatedVtbi) + " mL";
+  }
+
+  document.getElementById("emsSafetyResults").innerHTML = renderSafetyChecks(safetyChecks);
+}
+
+function clearEMS() {
+  const fields = [
+    "emsWeight",
+    "emsDose",
+    "emsDrugAmount",
+    "emsTotalVolume",
+    "emsVtbi",
+    "emsDuration"
+  ];
+
+  fields.forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.value = "";
+    }
+  });
+
+  document.getElementById("emsInfusionType").value = "";
+  updateEmsDoseUnits();
+
+  document.getElementById("emsDoseUnit").value = "";
+  document.getElementById("emsDrugUnit").value = "";
+  document.getElementById("emsDurationUnit").value = "";
+  document.getElementById("emsDripSet").value = "";
+
+  clearCriticalScreenAlert();
+  clearEmsFieldHighlights();
+
+  const status = document.getElementById("emsStatusResult");
+  const resultsPanel = document.getElementById("emsResultsPanel");
+
+  status.textContent = "Waiting for inputs";
+  status.classList.remove("ems-ready", "ems-caution", "ems-warning");
+
+  resultsPanel.classList.remove("critical-panel", "caution-panel", "ready-panel");
+
+  document.getElementById("emsConcentrationResult").textContent = "--";
+  document.getElementById("emsDoseResult").textContent = "--";
+  document.getElementById("emsRateResult").textContent = "--";
+  document.getElementById("emsMlMinResult").textContent = "--";
+  document.getElementById("emsGttsMinResult").textContent = "--";
+  document.getElementById("emsGttsSecResult").textContent = "--";
+  document.getElementById("emsPracticalResult").textContent = "--";
+  document.getElementById("emsVtbiResult").textContent = "--";
+  document.getElementById("emsSafetyResults").textContent = "Safety checks will appear here.";
+}
 function showSection(section) {
   const infusionSection = document.getElementById("infusionSection");
   const drawSection = document.getElementById("drawSection");
+  const emsSection = document.getElementById("emsSection");
+
   const showInfusion = document.getElementById("showInfusion");
   const showDraw = document.getElementById("showDraw");
+  const showEMS = document.getElementById("showEMS");
+
+  infusionSection.classList.add("hidden");
+  drawSection.classList.add("hidden");
+  emsSection.classList.add("hidden");
+
+  showInfusion.classList.remove("active");
+  showDraw.classList.remove("active");
+  showEMS.classList.remove("active");
+
   if (section === "infusion") {
     infusionSection.classList.remove("hidden");
-    drawSection.classList.add("hidden");
     showInfusion.classList.add("active");
-    showDraw.classList.remove("active");
   }
+
   if (section === "draw") {
     drawSection.classList.remove("hidden");
-    infusionSection.classList.add("hidden");
     showDraw.classList.add("active");
-    showInfusion.classList.remove("active");
+  }
+
+  if (section === "ems") {
+    emsSection.classList.remove("hidden");
+    showEMS.classList.add("active");
   }
 }
 document.getElementById("showInfusion").addEventListener("click", function () {
@@ -575,3 +1060,12 @@ if (clearInfusionButton) {
 if (clearDrawButton) {
   clearDrawButton.addEventListener("click", clearDraw);
 }
+document.getElementById("showEMS").addEventListener("click", function () {
+  showSection("ems");
+});
+
+document.getElementById("emsInfusionType").addEventListener("change", updateEmsDoseUnits);
+document.getElementById("calculateEMS").addEventListener("click", calculateEMS);
+document.getElementById("clearEMS").addEventListener("click", clearEMS);
+
+updateEmsDoseUnits();
