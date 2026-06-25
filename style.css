@@ -266,3 +266,13 @@ body.critical-alert-active::after {
     background-color: transparent;
   }
 }
+.optional-note {
+    font-weight: normal;
+    font-size: 13px;
+    color: #64748b;
+}
+.small-result {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 6px;
+}

@@ -426,6 +426,7 @@ function calculateDrawUp() {
   const vialConcentration = getNumber("vialConcentration");
   const concentrationUnit = document.getElementById("concentrationUnit").value;
   const drawResult = document.getElementById("drawResult");
+  const drawDoseMGResult = document.getElementById("drawDoseMgResult");
   if (dose === null || dose <= 0) {
     drawResult.textContent = "Enter ordered dose";
     return;
@@ -455,10 +456,13 @@ function calculateDrawUp() {
     doseMg !== null && concentrationMgMl !== null
       ? doseMg / concentrationMgMl
       : null;
-  drawResult.textContent =
-    volume !== null && Number.isFinite(volume)
-      ? formatNumber(volume) + " mL"
-      : "Unable to calculate";
+  if (volume !== null && Number.isFinite(volume)) {
+  drawResult.textContent = formatNumber(volume) + " mL";
+  drawDoseMgResult.textContent = formatNumber(doseMg) + " mg";
+} else {
+  drawResult.textContent = "Unable to calculate";
+  drawDoseMgResult.textContent = "--";
+}
 }
 document.getElementById("calculateDraw").addEventListener("click", calculateDrawUp);
 function showSection(section) {
@@ -559,6 +563,9 @@ function clearDraw() {
   if (orderedDoseUnit) orderedDoseUnit.value = "";
   if (concentrationUnit) concentrationUnit.value = "";
   if (drawResult) drawResult.textContent = "--";
+
+  const drawDoseMgResult = document.getElementById("drawDoseMgResult");
+  if (drawDoseMgResult) drawDoseMgResult.textContent = "--";
 }
 const clearInfusionButton = document.getElementById("clearInfusion");
 const clearDrawButton = document.getElementById("clearDraw");
