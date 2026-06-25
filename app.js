@@ -495,31 +495,46 @@ function clearInfusion() {
     "duration"
   ];
   fields.forEach(id => {
-    document.getElementById(id).value = "";
+    const field = document.getElementById(id);
+    if (field) {
+      field.value = "";
+    }
   });
-
-  clearCriticalScreenAlert();
-
-  document.getElementById("infusionType").value = "";
+  const infusionType = document.getElementById("infusionType");
+  const doseUnit = document.getElementById("doseUnit");
+  const drugUnit = document.getElementById("drugUnit");
+  const durationUnit = document.getElementById("durationUnit");
+  if (infusionType) infusionType.value = "";
   updateDoseUnits();
-  document.getElementById("doseUnit").value = "";
-  document.getElementById("drugUnit").value = "";
-  document.getElementById("durationUnit").value = "";
+  if (doseUnit) doseUnit.value = "";
+  if (drugUnit) drugUnit.value = "";
+  if (durationUnit) durationUnit.value = "";
   const statusResult = document.getElementById("statusResult");
   const resultsPanel = document.getElementById("infusionResultsPanel");
   const alertBanner = document.getElementById("alertBanner");
-  statusResult.textContent = "Waiting for inputs";
-  statusResult.classList.remove("status-ready", "status-check");
-  alertBanner.textContent = "Waiting for inputs";
-  alertBanner.classList.remove("ready", "caution", "critical");
-  alertBanner.classList.add("neutral");
-  resultsPanel.classList.remove(
-    "warning-panel",
-    "ready-panel",
-    "critical-panel",
-    "caution-panel"
-  );
-  clearFieldHighlights();
+  if (statusResult) {
+    statusResult.textContent = "Waiting for inputs";
+    statusResult.classList.remove("status-ready", "status-check");
+  }
+  if (alertBanner) {
+    alertBanner.textContent = "Waiting for inputs";
+    alertBanner.classList.remove("ready", "caution", "critical");
+    alertBanner.classList.add("neutral");
+  }
+  if (resultsPanel) {
+    resultsPanel.classList.remove(
+      "warning-panel",
+      "ready-panel",
+      "critical-panel",
+      "caution-panel"
+    );
+  }
+  if (typeof clearCriticalScreenAlert === "function") {
+    clearCriticalScreenAlert();
+  }
+  if (typeof clearFieldHighlights === "function") {
+    clearFieldHighlights();
+  }
   document.getElementById("concentrationResult").textContent = "--";
   document.getElementById("doseResult").textContent = "--";
   document.getElementById("rateResult").textContent = "--";
@@ -533,12 +548,23 @@ function clearDraw() {
     "vialConcentration"
   ];
   fields.forEach(id => {
-    document.getElementById(id).value = "";
+    const field = document.getElementById(id);
+    if (field) {
+      field.value = "";
+    }
   });
-  document.getElementById("orderedDoseUnit").value = "";
-  document.getElementById("concentrationUnit").value = "";
-  document.getElementById("drawResult").textContent = "--";
+  const orderedDoseUnit = document.getElementById("orderedDoseUnit");
+  const concentrationUnit = document.getElementById("concentrationUnit");
+  const drawResult = document.getElementById("drawResult");
+  if (orderedDoseUnit) orderedDoseUnit.value = "";
+  if (concentrationUnit) concentrationUnit.value = "";
+  if (drawResult) drawResult.textContent = "--";
 }
-document.getElementById("calculateDraw").addEventListener("click", calculateDrawup);
-document.getElementById("clearInfusion").addEventListener("click", clearInfusion);
-document.getElementById("clearDraw").addEventListener("click", clearDraw);
+const clearInfusionButton = document.getElementById("clearInfusion");
+const clearDrawButton = document.getElementById("clearDraw");
+if (clearInfusionButton) {
+  clearInfusionButton.addEventListener("click", clearInfusion);
+}
+if (clearDrawButton) {
+  clearDrawButton.addEventListener("click", clearDraw);
+}
