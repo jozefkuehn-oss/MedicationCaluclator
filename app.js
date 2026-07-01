@@ -420,77 +420,162 @@ document.getElementById("calculateInfusion").addEventListener("click", calculate
 updateDoseUnits();
 function calculateDrawDoseMg(weight, dose, unit) {
   if (dose === null || dose <= 0 || !unit) return null;
+
   if (unit === "g") return dose * 1000;
   if (unit === "mg") return dose;
   if (unit === "mcg") return dose / 1000;
   if (unit === "units") return dose;
+
   if (unit === "mg/kg") {
     if (weight === null || weight <= 0) return null;
     return weight * dose;
   }
+
   if (unit === "mcg/kg") {
     if (weight === null || weight <= 0) return null;
     return (weight * dose) / 1000;
   }
+
   if (unit === "units/kg") {
     if (weight === null || weight <= 0) return null;
     return weight * dose;
   }
+
   return null;
 }
-function calculateConcentrationMgPerMl(concentration, unit) {
-  if (concentration === null || concentration <= 0 || !unit) return null;
-  if (unit === "mg/mL") return concentration;
-  if (unit === "mcg/mL") return concentration / 1000;
-  if (unit === "units/mL") return concentration;
+
+function standardizeVialAmountToMg(amount, unit) {
+  if (amount === null || amount <= 0 || !unit) return null;
+
+  if (unit === "g") return amount * 1000;
+  if (unit === "mg") return amount;
+  if (unit === "mcg") return amount / 1000;
+  if (unit === "units") return amount;
+
   return null;
 }
+
 function calculateDrawUp() {
   const weight = getNumber("drawWeight");
-  const dose = getNumber("orderedDose");
-  const doseUnit = document.getElementById("orderedDoseUnit").value;
-  const vialConcentration = getNumber("vialConcentration");
-  const concentrationUnit = document.getElementById("concentrationUnit").value;
+  const orderedDose = getNumber("orderedDose");
+  const orderedDoseUnit = document.getElementById("orderedDoseUnit").value;
+
+  const vialDrugAmount = getNumber("vialDrugAmount");
+  const vialDrugUnit = document.getElementById("vialDrugUnit").value;
+  const vialVolume = getNumber("vialVolume");
+
   const drawResult = document.getElementById("drawResult");
-  const drawDoseMGResult = document.getElementById("drawDoseMgResult");
-  if (dose === null || dose <= 0) {
+  const drawDoseMgResult = document.getElementById("drawDoseMgResult");
+  const drawConcentrationResult = document.getElementById("drawConcentrationResult");
+
+  if (orderedDose === null || orderedDose <= 0) {
     drawResult.textContent = "Enter ordered dose";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
     return;
   }
-  if (!doseUnit) {
+
+  if (!orderedDoseUnit) {
     drawResult.textContent = "Select ordered dose unit";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
     return;
   }
-  if (doseUnit.includes("/kg") && (weight === null || weight <= 0)) {
+
+  if (orderedDoseUnit.includes("/kg") && (weight === null || weight <= 0)) {
     drawResult.textContent = "Enter patient weight";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
     return;
   }
-  if (vialConcentration === null || vialConcentration <= 0) {
-    drawResult.textContent = "Enter vial concentration";
+
+  if (vialDrugAmount === null || vialDrugAmount <= 0) {
+    drawResult.textContent = "Enter vial drug amount";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
     return;
   }
-  if (!concentrationUnit) {
-    drawResult.textContent = "Select concentration unit";
+
+  if (!vialDrugUnit) {
+    drawResult.textContent = "Select vial drug unit";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
     return;
   }
-  const doseMg = calculateDrawDoseMg(weight, dose, doseUnit);
-  const concentrationMgMl = calculateConcentrationMgPerMl(
-    vialConcentration,
-    concentrationUnit
+
+  if (vialVolume === null || vialVolume <= 0) {
+    drawResult.textContent = "Enter total vial volume";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
+    return;
+  }
+
+  const orderedDoseMg = calculateDrawDoseMg(
+    weight,
+    orderedDose,
+    orderedDoseUnit
   );
-  const volume =
-    doseMg !== null && concentrationMgMl !== null
-      ? doseMg / concentrationMgMl
+
+  const vialAmountMg = standardizeVialAmountToMg(
+    vialDrugAmount,
+    vialDrugUnit
+  );
+
+  const calculatedConcentrationMgMl =
+    vialAmountMg !== null && vialVolume > 0
+      ? vialAmountMg / vialVolume
       : null;
-  if (volume !== null && Number.isFinite(volume)) {
-  drawResult.textContent = formatNumber(volume) + " mL";
-  drawDoseMgResult.textContent = formatNumber(doseMg) + " mg";
-} else {
-  drawResult.textContent = "Unable to calculate";
-  drawDoseMgResult.textContent = "--";
+
+  const volumeToDraw =
+    orderedDoseMg !== null && calculatedConcentrationMgMl
+      ? orderedDoseMg / calculatedConcentrationMgMl
+      : null;
+
+  if (
+    volumeToDraw !== null &&
+    Number.isFinite(volumeToDraw) &&
+    calculatedConcentrationMgMl !== null &&
+    Number.isFinite(calculatedConcentrationMgMl)
+  ) {
+    drawResult.textContent = formatNumber(volumeToDraw) + " mL";
+    drawDoseMgResult.textContent = formatNumber(orderedDoseMg) + " mg";
+    drawConcentrationResult.textContent =
+      formatNumber(calculatedConcentrationMgMl) + " mg/mL";
+  } else {
+    drawResult.textContent = "Unable to calculate";
+    drawDoseMgResult.textContent = "--";
+    drawConcentrationResult.textContent = "--";
+  }
 }
+
+function clearDraw() {
+  const fields = [
+    "drawWeight",
+    "orderedDose",
+    "vialDrugAmount",
+    "vialVolume"
+  ];
+
+  fields.forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.value = "";
+    }
+  });
+
+  const orderedDoseUnit = document.getElementById("orderedDoseUnit");
+  const vialDrugUnit = document.getElementById("vialDrugUnit");
+  const drawResult = document.getElementById("drawResult");
+  const drawDoseMgResult = document.getElementById("drawDoseMgResult");
+  const drawConcentrationResult = document.getElementById("drawConcentrationResult");
+
+  if (orderedDoseUnit) orderedDoseUnit.value = "";
+  if (vialDrugUnit) vialDrugUnit.value = "";
+
+  if (drawResult) drawResult.textContent = "--";
+  if (drawDoseMgResult) drawDoseMgResult.textContent = "--";
+  if (drawConcentrationResult) drawConcentrationResult.textContent = "--";
 }
-document.getElementById("calculateDraw").addEventListener("click", calculateDrawUp);
 function calculateGravityDrip(rateMlHr, dripFactor) {
   if (rateMlHr === null || !Number.isFinite(rateMlHr) || rateMlHr <= 0) {
     return null;
@@ -968,12 +1053,6 @@ function showSection(section) {
     showEMS.classList.add("active");
   }
 }
-document.getElementById("showInfusion").addEventListener("click", function () {
-  showSection("infusion");
-});
-document.getElementById("showDraw").addEventListener("click", function () {
-  showSection("draw");
-});
 function clearInfusion() {
   const fields = [
     "weight",
@@ -1030,42 +1109,71 @@ function clearInfusion() {
   document.getElementById("vtbiResult").textContent = "--";
   document.getElementById("safetyResults").textContent = "Safety checks will appear here.";
 }
-function clearDraw() {
-  const fields = [
-    "drawWeight",
-    "orderedDose",
-    "vialConcentration"
-  ];
-  fields.forEach(id => {
-    const field = document.getElementById(id);
-    if (field) {
-      field.value = "";
-    }
-  });
-  const orderedDoseUnit = document.getElementById("orderedDoseUnit");
-  const concentrationUnit = document.getElementById("concentrationUnit");
-  const drawResult = document.getElementById("drawResult");
-  if (orderedDoseUnit) orderedDoseUnit.value = "";
-  if (concentrationUnit) concentrationUnit.value = "";
-  if (drawResult) drawResult.textContent = "--";
+const showInfusionButton = document.getElementById("showInfusion");
+const showDrawButton = document.getElementById("showDraw");
+const showEMSButton = document.getElementById("showEMS");
 
-  const drawDoseMgResult = document.getElementById("drawDoseMgResult");
-  if (drawDoseMgResult) drawDoseMgResult.textContent = "--";
+if (showInfusionButton) {
+  showInfusionButton.addEventListener("click", function () {
+    showSection("infusion");
+  });
 }
+
+if (showDrawButton) {
+  showDrawButton.addEventListener("click", function () {
+    showSection("draw");
+  });
+}
+
+if (showEMSButton) {
+  showEMSButton.addEventListener("click", function () {
+    showSection("ems");
+  });
+}
+
+const calculateInfusionButton = document.getElementById("calculateInfusion");
+
+if (calculateInfusionButton) {
+  calculateInfusionButton.addEventListener("click", calculateInfusion);
+}
+
 const clearInfusionButton = document.getElementById("clearInfusion");
-const clearDrawButton = document.getElementById("clearDraw");
+
 if (clearInfusionButton) {
   clearInfusionButton.addEventListener("click", clearInfusion);
 }
+
+const calculateDrawButton = document.getElementById("calculateDraw");
+
+if (calculateDrawButton) {
+  calculateDrawButton.addEventListener("click", calculateDrawUp);
+}
+
+const clearDrawButton = document.getElementById("clearDraw");
+
 if (clearDrawButton) {
   clearDrawButton.addEventListener("click", clearDraw);
 }
-document.getElementById("showEMS").addEventListener("click", function () {
-  showSection("ems");
-});
 
-document.getElementById("emsInfusionType").addEventListener("change", updateEmsDoseUnits);
-document.getElementById("calculateEMS").addEventListener("click", calculateEMS);
-document.getElementById("clearEMS").addEventListener("click", clearEMS);
+const emsInfusionTypeSelect = document.getElementById("emsInfusionType");
 
-updateEmsDoseUnits();
+if (emsInfusionTypeSelect) {
+  emsInfusionTypeSelect.addEventListener("change", updateEmsDoseUnits);
+}
+
+const calculateEMSButton = document.getElementById("calculateEMS");
+
+if (calculateEMSButton) {
+  calculateEMSButton.addEventListener("click", calculateEMS);
+}
+
+const clearEMSButton = document.getElementById("clearEMS");
+
+if (clearEMSButton) {
+  clearEMSButton.addEventListener("click", clearEMS);
+}
+
+if (typeof updateEmsDoseUnits === "function") {
+  updateEmsDoseUnits();
+}
+showSection("draw");

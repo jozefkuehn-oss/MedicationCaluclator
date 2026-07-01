@@ -18,15 +18,15 @@
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
-    <p style="font-size: 12px; opacity: 0.8;">Version 1.1.0</p>
+    <p style="font-size: 12px; opacity: 0.8;">Version 1.2.0</p>
   </div>
 <main class="app">
     <div class="tabs">
-  <button class="tab-button active" id="showInfusion">Infusion</button>
-  <button class="tab-button" id="showDraw">Draw-Up</button>
+  <button class="tab-button active" id="showDraw">Draw-Up/Dose</button>
+  <button class="tab-button" id="showInfusion">Pump Infusion</button>
   <button class="tab-button" id="showEMS">EMS Drip</button>
 </div>
-    <section class="card" id="infusionSection">
+    <section class="card hidden" id="infusionSection">
       <h2>Infusion Calculator</h2>
       <label for="infusionType">Infusion Type</label>
       <select id="infusionType">
@@ -83,41 +83,70 @@
         Verify all medication doses with local protocol, concentration, and medical direction.
       </p>
     </section>
-  <section class="card hidden" id="drawSection">
+  <section class="card" id="drawSection">
   <h2>Draw-Up Calculator</h2>
-  <label for="drawWeight">Patient Weight (kg)</label>
-  <input type="number" id="drawWeight" placeholder="Example: 70" />
-  <label for="orderedDose">Ordered Dose</label>
-  <input type="number" id="orderedDose" placeholder="Example: 0.3" />
-  <label for="orderedDoseUnit">Ordered Dose Unit</label>
-  <select id="orderedDoseUnit">
-    <option value="" disabled selected>Select ordered dose unit</option>
-    <option value="mg/kg">mg/kg</option>
-    <option value="mcg/kg">mcg/kg</option>
-    <option value="units/kg">units/kg</option>
-    <option value="g">g</option>
-    <option value="mg">mg</option>
-    <option value="mcg">mcg</option>
-    <option value="units">units</option>
-  </select>
-  <label for="vialConcentration">Vial Concentration</label>
-  <input type="number" id="vialConcentration" placeholder="Example: 1" />
-  <label for="concentrationUnit">Concentration Unit</label>
-  <select id="concentrationUnit">
-    <option value="" disabled selected>Select concentration unit</option>
-    <option value="mg/mL">mg/mL</option>
-    <option value="mcg/mL">mcg/mL</option>
-    <option value="units/mL">units/mL</option>
-  </select>
+
+  <div class="form-section order-section">
+    <h3>Order Information</h3>
+    <p class="section-help">
+      Enter the ordered medication dose.
+    </p>
+
+    <label for="drawWeight">Patient Weight (kg)</label>
+    <input type="number" id="drawWeight" placeholder="Example: 70" />
+
+    <label for="orderedDose">Ordered Dose</label>
+    <input type="number" id="orderedDose" placeholder="Example: 15" />
+
+    <label for="orderedDoseUnit">Ordered Dose Unit</label>
+    <select id="orderedDoseUnit">
+      <option value="" disabled selected>Select ordered dose unit</option>
+      <option value="mg/kg">mg/kg</option>
+      <option value="mcg/kg">mcg/kg</option>
+      <option value="units/kg">units/kg</option>
+      <option value="g">g</option>
+      <option value="mg">mg</option>
+      <option value="mcg">mcg</option>
+      <option value="units">units</option>
+    </select>
+  </div>
+
+  <div class="form-section vial-section">
+    <h3>Vial Label Information</h3>
+    <p class="section-help">
+      Enter the vial exactly as written on the label. Example: if the vial says
+      <strong>500 mg in 5 mL</strong>, enter <strong>500</strong> for drug amount and
+      <strong>5</strong> for vial volume.
+    </p>
+
+    <label for="vialDrugAmount">Drug Amount on Vial</label>
+    <input type="number" id="vialDrugAmount" placeholder="Example: 500" />
+
+    <label for="vialDrugUnit">Drug Unit on Vial</label>
+    <select id="vialDrugUnit">
+      <option value="" disabled selected>Select vial drug unit</option>
+      <option value="g">g</option>
+      <option value="mg">mg</option>
+      <option value="mcg">mcg</option>
+      <option value="units">units</option>
+    </select>
+
+    <label for="vialVolume">Total Vial Volume (mL)</label>
+    <input type="number" id="vialVolume" placeholder="Example: 5" />
+  </div>
+
   <button id="calculateDraw">Calculate Draw-Up</button>
   <button id="clearDraw" class="secondary-button">Clear</button>
+
   <div class="result" id="drawResultsPanel">
     <h3>Result</h3>
     <p><strong>Volume to Draw:</strong> <span id="drawResult">--</span></p>
     <p class="small-result"><strong>Drug Amount:</strong> <span id="drawDoseMgResult">--</span></p>
+    <p class="small-result"><strong>Calculated Vial Concentration:</strong> <span id="drawConcentrationResult">--</span></p>
   </div>
+
   <p class="warning">
-    Confirm vial concentration, ordered dose, and local protocol before administration.
+    Confirm vial label, ordered dose, patient weight, concentration, and local protocol before administration.
   </p>
 </section>
 <section class="card hidden" id="emsSection">

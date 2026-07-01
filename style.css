@@ -299,3 +299,44 @@ body.critical-alert-active::after {
   color: #991b1b;
   font-weight: 900;
 }
+.form-section {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.form-section h3 {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.section-help {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-top: 0;
+  color: #475569;
+}
+
+.order-section {
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
+}
+
+.vial-section {
+  background: #f5f3ff;
+  border: 2px solid #8b5cf6;
+}
+
+.vial-section h3 {
+  color: #5b21b6;
+}
+
+.order-section h3 {
+  color: #1d4ed8;
+}
+
+.small-result {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 6px;
+}
