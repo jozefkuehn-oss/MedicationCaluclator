@@ -18,7 +18,7 @@
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
-    <p style="font-size: 12px; opacity: 0.8;">Version 1.2.0</p>
+    <p style="font-size: 12px; opacity: 0.8;">Version 1.1.5</p>
   </div>
 <main class="app">
     <div class="tabs">
@@ -28,6 +28,12 @@
 </div>
     <section class="card hidden" id="infusionSection">
       <h2>Infusion Calculator</h2>
+
+      <label for="infusionMedication">Medication <span class="optional-note">(optional)</span></label>
+<select id="infusionMedication">
+  <option value="" selected>No medication selected</option>
+</select>
+
       <label for="infusionType">Infusion Type</label>
       <select id="infusionType">
   <option value="" disabled selected>Select infusion type</option>
@@ -69,6 +75,8 @@
     Waiting for inputs
   </div>
   <h3>Results</h3>
+  <p><strong>Order Summary:</strong> <span id="infusionOrderSummaryResult">--</span></p>
+  <p class="small-result"><strong>Patient Weight:</strong> <span id="infusionWeightResult">--</span></p>
   <p><strong>Status:</strong> <span id="statusResult">Waiting for inputs</span></p>
   <p><strong>Concentration:</strong> <span id="concentrationResult">--</span></p>
   <p><strong>Dose:</strong> <span id="doseResult">--</span></p>
@@ -85,6 +93,11 @@
     </section>
   <section class="card" id="drawSection">
   <h2>Draw-Up Calculator</h2>
+
+  <label for="drawMedication">Medication <span class="optional-note">(optional)</span></label>
+<select id="drawMedication">
+  <option value="" selected>No medication selected</option>
+</select>
 
   <div class="form-section order-section">
     <h3>Order Information</h3>
@@ -140,6 +153,8 @@
 
   <div class="result" id="drawResultsPanel">
     <h3>Result</h3>
+    <p><strong>Order Summary:</strong> <span id="drawOrderSummaryResult">--</span></p>
+    <p class="small-result"><strong>Patient Weight:</strong> <span id="drawWeightResult">--</span></p>
     <p><strong>Volume to Draw:</strong> <span id="drawResult">--</span></p>
     <p class="small-result"><strong>Drug Amount:</strong> <span id="drawDoseMgResult">--</span></p>
     <p class="small-result"><strong>Calculated Vial Concentration:</strong> <span id="drawConcentrationResult">--</span></p>
@@ -151,6 +166,11 @@
 </section>
 <section class="card hidden" id="emsSection">
   <h2>EMS Drip Calculator</h2>
+
+  <label for="emsMedication">Medication <span class="optional-note">(optional)</span></label>
+<select id="emsMedication">
+  <option value="" selected>No medication selected</option>
+</select>
 
   <label for="emsInfusionType">Infusion Type</label>
   <select id="emsInfusionType">
@@ -211,6 +231,8 @@
 
   <div class="result" id="emsResultsPanel">
     <h3>EMS Results</h3>
+    <p><strong>Order Summary:</strong> <span id="emsOrderSummaryResult">--</span></p>
+    <p class="small-result"><strong>Patient Weight:</strong> <span id="emsWeightResult">--</span></p>
     <p><strong>Status:</strong> <span id="emsStatusResult">Waiting for inputs</span></p>
     <p><strong>Concentration:</strong> <span id="emsConcentrationResult">--</span></p>
     <p><strong>Dose:</strong> <span id="emsDoseResult">--</span></p>
@@ -232,7 +254,8 @@
   </p>
 </section>
 </main>
-  <script src="app.js"></script>
+<script src="medications.js"></script>
+<script src="app.js"></script>
   <script>
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js");
