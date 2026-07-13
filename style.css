@@ -340,3 +340,69 @@ body.critical-alert-active::after {
   color: #475569;
   margin-top: 6px;
 }
+.medication-card {
+  margin-top: 18px;
+}
+
+.medication-list-panel {
+  margin-top: 18px;
+}
+
+.medication-list-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.medication-list-item:hover {
+  background: #eef2ff;
+}
+
+.medication-list-name {
+  font-weight: 800;
+}
+
+.medication-list-class {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 4px;
+}
+body {
+  transition: background 0.45s ease;
+  background-attachment: fixed;
+}
+
+/* Draw-Up/Dose — bold violet / electric purple */
+body.tab-draw {
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.75), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.7), transparent 36%),
+    linear-gradient(90deg, #7c3aed 0%, #a855f7 45%, #312e81 100%);
+}
+
+/* Pump Infusion — bright blue / cyan */
+body.tab-infusion {
+  background:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.8), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.75), transparent 38%),
+    linear-gradient(90deg, #0284c7 0%, #2563eb 45%, #1e3a8a 100%);
+}
+
+/* EMS Drip — dark slate / steel / electric blue-gray */
+body.tab-ems {
+  background:
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.6), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.55), transparent 38%),
+    linear-gradient(90deg, #0f172a 0%, #334155 45%, #1e293b 100%);
+}
+
+/* Medication Library — magenta / indigo */
+body.tab-library {
+  background:
+    radial-gradient(circle at top right, rgba(217, 70, 239, 0.75), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.75), transparent 38%),
+    linear-gradient(90deg, #86198f 0%, #7c3aed 45%, #312e81 100%);
+}
