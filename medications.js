@@ -416,7 +416,7 @@ const medicationLibrary = [
   },
   {
     genericName: "Nitroglycerin",
-    tradeNames: ["Tridil"],
+    tradeNames: ["Tridil","Nitrobid"],
     classes: ["Vasodilators / Antihypertensives"]
   },
   {
@@ -1475,3 +1475,841 @@ medicationLibrary.forEach(medication => {
     medication.keyWarnings ||
     defaultDetails.keyWarnings;
 });
+const medicationClassOverrides = {
+  "Acetaminophen": ["Analgesic", "Antipyretic"],
+  "Acetylcysteine": ["Antidote", "Mucolytic"],
+  "Adenosine": ["Antiarrhythmic", "Nucleoside"],
+  "Albumin": ["Colloid", "Plasma Volume Expander"],
+  "Alteplase": ["Thrombolytic", "Fibrinolytic"],
+  "Amikacin": ["Antibiotic", "Aminoglycoside"],
+  "Aminocaproic Acid": ["Antifibrinolytic"],
+  "Amiodarone": ["Antiarrhythmic", "Class III Antiarrhythmic"],
+  "Ampicillin": ["Antibiotic", "Penicillin"],
+  "Ampicillin/Sulbactam": ["Antibiotic", "Beta-Lactam/Beta-Lactamase Inhibitor"],
+  "Argatroban": ["Anticoagulant", "Direct Thrombin Inhibitor"],
+  "Azithromycin": ["Antibiotic", "Macrolide"],
+  "Bivalirudin": ["Anticoagulant", "Direct Thrombin Inhibitor"],
+  "Bumetanide": ["Diuretic", "Loop Diuretic"],
+
+  "Calcium Chloride": ["Electrolyte", "Calcium Salt"],
+  "Calcium Gluconate": ["Electrolyte", "Calcium Salt"],
+  "Caspofungin": ["Antifungal", "Echinocandin"],
+  "Cefazolin": ["Antibiotic", "Cephalosporin", "First-Generation Cephalosporin"],
+  "Cefepime": ["Antibiotic", "Cephalosporin", "Fourth-Generation Cephalosporin"],
+  "Cefotaxime": ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+  "Ceftaroline": ["Antibiotic", "Cephalosporin", "Fifth-Generation Cephalosporin"],
+  "Ceftazidime": ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+  "Ceftriaxone": ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+  "Cefuroxime": ["Antibiotic", "Cephalosporin", "Second-Generation Cephalosporin"],
+  "Ciprofloxacin": ["Antibiotic", "Fluoroquinolone"],
+  "Clevidipine": ["Antihypertensive", "Calcium Channel Blocker"],
+  "Clindamycin": ["Antibiotic", "Lincosamide"],
+  "Daptomycin": ["Antibiotic", "Lipopeptide"],
+
+  "Dexmedetomidine": ["Sedative", "Alpha-2 Adrenergic Agonist"],
+  "Dextrose 10%": ["Carbohydrate", "Glucose Supplement"],
+  "Dextrose 20%": ["Carbohydrate", "Glucose Supplement"],
+  "Dextrose 50%": ["Carbohydrate", "Glucose Supplement"],
+  "Diazepam": ["Benzodiazepine", "Anticonvulsant", "Sedative"],
+  "Digoxin": ["Cardiac Glycoside"],
+  "Diltiazem": ["Calcium Channel Blocker", "Rate Control Agent"],
+  "Diphenhydramine": ["Antihistamine", "H1 Antagonist"],
+  "Dobutamine": ["Inotrope", "Beta-1 Adrenergic Agonist"],
+  "Dopamine": ["Vasopressor", "Inotrope", "Catecholamine"],
+
+  "Enalaprilat": ["Antihypertensive", "ACE Inhibitor"],
+  "Epinephrine": ["Vasopressor", "Catecholamine", "Adrenergic Agonist"],
+  "Eptifibatide": ["Antiplatelet", "Glycoprotein IIb/IIIa Inhibitor"],
+  "Ertapenem": ["Antibiotic", "Carbapenem"],
+  "Esmolol": ["Beta Blocker", "Antihypertensive", "Antiarrhythmic"],
+  "Etomidate": ["Sedative-Hypnotic", "Induction Agent"],
+  "Famotidine": ["Histamine-2 Receptor Antagonist", "Acid Suppressant"],
+  "Fentanyl": ["Opioid Analgesic"],
+  "Fluconazole": ["Antifungal", "Azole Antifungal"],
+  "Fosphenytoin": ["Anticonvulsant", "Hydantoin Prodrug"],
+  "Furosemide": ["Diuretic", "Loop Diuretic"],
+
+  "Gentamicin": ["Antibiotic", "Aminoglycoside"],
+  "Glucagon": ["Hormone", "Antihypoglycemic Agent"],
+  "Haloperidol": ["Antipsychotic", "Butyrophenone"],
+  "Heparin": ["Anticoagulant"],
+  "Hydralazine": ["Antihypertensive", "Direct Vasodilator"],
+  "Hydrocortisone": ["Corticosteroid", "Glucocorticoid"],
+  "Hydromorphone": ["Opioid Analgesic"],
+  "Hydroxocobalamin": ["Antidote", "Vitamin B12 Analog"],
+  "Immune Globulin IV": ["Immune Globulin", "Immunomodulator"],
+  "Infliximab": ["Monoclonal Antibody", "TNF Inhibitor"],
+  "Insulin Regular": ["Insulin", "Antihyperglycemic Agent"],
+
+  "Ketamine": ["Dissociative Anesthetic", "NMDA Receptor Antagonist"],
+  "Ketorolac": ["NSAID", "Non-Opioid Analgesic"],
+  "Labetalol": ["Beta Blocker", "Alpha-1 Blocker", "Antihypertensive"],
+  "Levetiracetam": ["Anticonvulsant"],
+  "Levofloxacin": ["Antibiotic", "Fluoroquinolone"],
+  "Lidocaine": ["Antiarrhythmic", "Class Ib Antiarrhythmic", "Local Anesthetic"],
+  "Linezolid": ["Antibiotic", "Oxazolidinone"],
+  "Lorazepam": ["Benzodiazepine", "Sedative", "Anticonvulsant"],
+
+  "Magnesium Sulfate": ["Electrolyte", "Magnesium Salt"],
+  "Mannitol": ["Osmotic Diuretic"],
+  "Meropenem": ["Antibiotic", "Carbapenem"],
+  "Methocarbamol": ["Skeletal Muscle Relaxant"],
+  "Methylene Blue": ["Antidote", "Dye"],
+  "Methylprednisolone": ["Corticosteroid", "Glucocorticoid"],
+  "Metoclopramide": ["Antiemetic", "Prokinetic", "Dopamine Antagonist"],
+  "Metoprolol": ["Beta Blocker", "Antihypertensive"],
+  "Metronidazole": ["Antibiotic", "Nitroimidazole"],
+  "Micafungin": ["Antifungal", "Echinocandin"],
+  "Midazolam": ["Benzodiazepine", "Sedative", "Anticonvulsant"],
+  "Milrinone": ["Inotrope", "Phosphodiesterase-3 Inhibitor"],
+  "Morphine": ["Opioid Analgesic"],
+
+  "Naloxone": ["Antidote", "Opioid Antagonist"],
+  "Nicardipine": ["Antihypertensive", "Calcium Channel Blocker"],
+  "Nitroglycerin": ["Nitrate", "Vasodilator"],
+  "Nitroprusside": ["Vasodilator", "Nitrovasodilator"],
+  "Norepinephrine": ["Vasopressor", "Catecholamine", "Adrenergic Agonist"],
+  "Octreotide": ["Somatostatin Analog"],
+  "Ondansetron": ["Antiemetic", "5-HT3 Antagonist"],
+  "Pantoprazole": ["Proton Pump Inhibitor"],
+  "Penicillin G": ["Antibiotic", "Penicillin"],
+  "Phenobarbital": ["Barbiturate", "Anticonvulsant"],
+  "Phenylephrine": ["Vasopressor", "Alpha-1 Adrenergic Agonist"],
+  "Phenytoin": ["Anticonvulsant", "Hydantoin"],
+
+  "Piperacillin/Tazobactam": ["Antibiotic", "Beta-Lactam/Beta-Lactamase Inhibitor"],
+  "Potassium Chloride": ["Electrolyte", "Potassium Salt"],
+  "Procainamide": ["Antiarrhythmic", "Class Ia Antiarrhythmic"],
+  "Promethazine": ["Antihistamine", "Phenothiazine", "Antiemetic"],
+  "Propofol": ["Sedative-Hypnotic", "General Anesthetic"],
+  "Protamine": ["Antidote", "Heparin Reversal Agent"],
+  "Rocuronium": ["Neuromuscular Blocker", "Nondepolarizing Paralytic"],
+  "Sodium Bicarbonate": ["Alkalinizing Agent", "Electrolyte"],
+  "Sodium Phosphate": ["Electrolyte", "Phosphate Salt"],
+  "Succinylcholine": ["Neuromuscular Blocker", "Depolarizing Paralytic"],
+
+  "Tenecteplase": ["Thrombolytic", "Fibrinolytic"],
+  "Thiamine": ["Vitamin", "Vitamin B1"],
+  "Tigecycline": ["Antibiotic", "Glycylcycline"],
+  "Tranexamic Acid": ["Antifibrinolytic"],
+  "Vancomycin": ["Antibiotic", "Glycopeptide"],
+  "Vasopressin": ["Vasopressor", "Antidiuretic Hormone Analog"],
+  "Vecuronium": ["Neuromuscular Blocker", "Nondepolarizing Paralytic"],
+  "Voriconazole": ["Antifungal", "Azole Antifungal"]
+};
+
+medicationLibrary.forEach(medication => {
+  const updatedClasses = medicationClassOverrides[medication.genericName];
+
+  if (updatedClasses) {
+    medication.classes = updatedClasses;
+  }
+});
+const medicationIndicationOverrides = {
+  "Acetaminophen": ["Pain", "Fever"],
+  "Acetylcysteine": ["Acetaminophen Toxicity", "Toxicology"],
+  "Adenosine": ["SVT", "Narrow-Complex Tachycardia", "Diagnostic Rhythm Evaluation"],
+  "Albumin": ["Volume Expansion", "Hypoalbuminemia", "Oncotic Support"],
+  "Alteplase": ["Stroke", "Pulmonary Embolism", "STEMI", "Thrombolysis", "Catheter Clearance"],
+  "Amikacin": ["Sepsis", "Gram-Negative Infection"],
+  "Aminocaproic Acid": ["Bleeding", "Hyperfibrinolysis"],
+  "Amiodarone": ["Ventricular Tachycardia", "Ventricular Fibrillation", "Atrial Dysrhythmia", "Wide-Complex Tachycardia"],
+  "Ampicillin": ["Infection", "Sepsis", "Meningitis"],
+  "Ampicillin/Sulbactam": ["Infection", "Sepsis", "Skin/Soft Tissue Infection", "Intra-Abdominal Infection"],
+  "Argatroban": ["Anticoagulation", "HIT"],
+  "Azithromycin": ["Pneumonia", "Atypical Infection", "Respiratory Infection"],
+  "Bivalirudin": ["Anticoagulation", "PCI", "HIT"],
+  "Bumetanide": ["Fluid Overload", "Pulmonary Edema", "Diuresis"],
+
+  "Calcium Chloride": ["Hyperkalemia", "Hypocalcemia", "Calcium Channel Blocker Toxicity", "Cardiac Arrest"],
+  "Calcium Gluconate": ["Hyperkalemia", "Hypocalcemia", "Magnesium Toxicity", "Calcium Channel Blocker Toxicity"],
+  "Caspofungin": ["Fungal Infection", "Candida", "Invasive Fungal Infection"],
+  "Cefazolin": ["Skin/Soft Tissue Infection", "Surgical Prophylaxis", "Infection"],
+  "Cefepime": ["Sepsis", "Pseudomonas Coverage", "Pneumonia", "Neutropenic Fever"],
+  "Cefotaxime": ["Infection", "Meningitis", "Sepsis"],
+  "Ceftaroline": ["MRSA", "Skin/Soft Tissue Infection", "Pneumonia"],
+  "Ceftazidime": ["Pseudomonas Coverage", "Sepsis", "Pneumonia"],
+  "Ceftriaxone": ["Sepsis", "Pneumonia", "Meningitis", "UTI", "Infection"],
+  "Cefuroxime": ["Infection", "Respiratory Infection", "Skin/Soft Tissue Infection"],
+  "Ciprofloxacin": ["UTI", "Gram-Negative Infection", "Intra-Abdominal Infection"],
+  "Clevidipine": ["Hypertension", "Blood Pressure Control"],
+  "Clindamycin": ["Skin/Soft Tissue Infection", "Anaerobic Infection", "Dental Infection", "Toxin Suppression"],
+  "Daptomycin": ["MRSA", "VRE", "Gram-Positive Infection"],
+
+  "Dexmedetomidine": ["Sedation", "ICU Sedation", "Procedural Sedation"],
+  "Dextrose 10%": ["Hypoglycemia", "Glucose Support"],
+  "Dextrose 20%": ["Hypoglycemia", "Glucose Support"],
+  "Dextrose 50%": ["Severe Hypoglycemia", "Hyperkalemia Adjunct"],
+  "Diazepam": ["Seizure", "Status Epilepticus", "Sedation", "Alcohol Withdrawal"],
+  "Digoxin": ["Rate Control", "Heart Failure"],
+  "Diltiazem": ["Atrial Fibrillation", "Atrial Flutter", "SVT", "Rate Control"],
+  "Diphenhydramine": ["Allergic Reaction", "Anaphylaxis Adjunct", "Dystonic Reaction", "Pruritus"],
+  "Dobutamine": ["Cardiogenic Shock", "Heart Failure", "Low Cardiac Output"],
+  "Dopamine": ["Shock", "Hypotension", "Bradycardia"],
+
+  "Enalaprilat": ["Hypertension", "Afterload Reduction"],
+  "Epinephrine": ["Cardiac Arrest", "Anaphylaxis", "Shock", "Severe Asthma", "Bradycardia"],
+  "Eptifibatide": ["ACS", "PCI", "Antiplatelet Therapy"],
+  "Ertapenem": ["Infection", "Intra-Abdominal Infection", "Skin/Soft Tissue Infection", "UTI"],
+  "Esmolol": ["Tachycardia", "Hypertension", "Rate Control"],
+  "Etomidate": ["RSI", "Induction", "Procedural Sedation"],
+  "Famotidine": ["Acid Suppression", "GI Prophylaxis", "Allergic Reaction Adjunct"],
+  "Fentanyl": ["Pain", "Analgesia", "Sedation Adjunct", "Post-Intubation Analgesia"],
+  "Fluconazole": ["Fungal Infection", "Candida"],
+  "Fosphenytoin": ["Seizure", "Status Epilepticus"],
+  "Furosemide": ["Fluid Overload", "Pulmonary Edema", "Diuresis"],
+
+  "Gentamicin": ["Sepsis", "Gram-Negative Infection"],
+  "Glucagon": ["Hypoglycemia", "Beta Blocker Toxicity", "Calcium Channel Blocker Toxicity"],
+  "Haloperidol": ["Agitation", "Delirium", "Nausea"],
+  "Heparin": ["Anticoagulation", "ACS", "VTE", "DVT", "Pulmonary Embolism"],
+  "Hydralazine": ["Hypertension", "Blood Pressure Control"],
+  "Hydrocortisone": ["Adrenal Crisis", "Allergic Reaction", "Shock Adjunct", "Asthma/COPD"],
+  "Hydromorphone": ["Pain", "Analgesia"],
+  "Hydroxocobalamin": ["Cyanide Poisoning", "Smoke Inhalation", "Toxicology"],
+  "Immune Globulin IV": ["Immunodeficiency", "Autoimmune Disease", "Neurologic Disease"],
+  "Infliximab": ["Autoimmune Disease", "Inflammatory Bowel Disease"],
+  "Insulin Regular": ["Hyperglycemia", "DKA", "HHS", "Hyperkalemia"],
+
+  "Ketamine": ["Pain", "Procedural Sedation", "RSI", "Induction", "Post-Intubation Sedation"],
+  "Ketorolac": ["Pain", "Non-Opioid Analgesia"],
+  "Labetalol": ["Hypertension", "Blood Pressure Control"],
+  "Levetiracetam": ["Seizure", "Status Epilepticus", "Seizure Prophylaxis"],
+  "Levofloxacin": ["Pneumonia", "UTI", "Respiratory Infection"],
+  "Lidocaine": ["Ventricular Dysrhythmia", "Local Anesthesia", "Pain"],
+  "Linezolid": ["MRSA", "VRE", "Gram-Positive Infection"],
+  "Lorazepam": ["Seizure", "Status Epilepticus", "Agitation", "Sedation", "Alcohol Withdrawal"],
+
+  "Magnesium Sulfate": ["Torsades de Pointes", "Hypomagnesemia", "Severe Asthma", "Eclampsia", "Seizure"],
+  "Mannitol": ["Increased Intracranial Pressure", "Cerebral Edema", "Osmotic Diuresis"],
+  "Meropenem": ["Sepsis", "Broad-Spectrum Infection", "Resistant Infection"],
+  "Methocarbamol": ["Muscle Spasm", "Musculoskeletal Pain"],
+  "Methylene Blue": ["Methemoglobinemia", "Vasoplegia", "Toxicology"],
+  "Methylprednisolone": ["Allergic Reaction", "Asthma/COPD", "Inflammation", "Shock Adjunct"],
+  "Metoclopramide": ["Nausea", "Vomiting", "Migraine Adjunct", "Gastroparesis"],
+  "Metoprolol": ["Rate Control", "Hypertension", "ACS"],
+  "Metronidazole": ["Anaerobic Infection", "Intra-Abdominal Infection", "C. difficile"],
+  "Micafungin": ["Fungal Infection", "Candida", "Invasive Fungal Infection"],
+  "Midazolam": ["Sedation", "Seizure", "RSI Adjunct", "Post-Intubation Sedation"],
+  "Milrinone": ["Heart Failure", "Low Cardiac Output", "Cardiogenic Shock"],
+  "Morphine": ["Pain", "Analgesia", "Palliative Dyspnea"],
+
+  "Naloxone": ["Opioid Overdose", "Respiratory Depression", "Toxicology"],
+  "Nicardipine": ["Hypertension", "Blood Pressure Control", "Stroke Blood Pressure Management"],
+  "Nitroglycerin": ["Chest Pain", "ACS", "Pulmonary Edema", "Hypertension"],
+  "Nitroprusside": ["Hypertensive Emergency", "Blood Pressure Control"],
+  "Norepinephrine": ["Shock", "Hypotension", "Septic Shock"],
+  "Octreotide": ["Variceal Bleeding", "GI Bleed", "Endocrine Indication"],
+  "Ondansetron": ["Nausea", "Vomiting"],
+  "Pantoprazole": ["GI Bleed", "Acid Suppression", "Stress Ulcer Prophylaxis"],
+  "Penicillin G": ["Infection", "Syphilis", "Streptococcal Infection"],
+  "Phenobarbital": ["Seizure", "Status Epilepticus", "Alcohol Withdrawal"],
+  "Phenylephrine": ["Hypotension", "Shock", "Vasopressor Support"],
+  "Phenytoin": ["Seizure", "Status Epilepticus"],
+
+  "Piperacillin/Tazobactam": ["Sepsis", "Broad-Spectrum Infection", "Intra-Abdominal Infection", "Pneumonia"],
+  "Potassium Chloride": ["Hypokalemia", "Electrolyte Replacement"],
+  "Procainamide": ["Wide-Complex Tachycardia", "Ventricular Tachycardia", "Atrial Dysrhythmia"],
+  "Promethazine": ["Nausea", "Vomiting", "Allergic Reaction Adjunct"],
+  "Propofol": ["Sedation", "Induction", "Post-Intubation Sedation"],
+  "Protamine": ["Heparin Reversal", "Anticoagulant Reversal"],
+  "Rocuronium": ["RSI", "Paralysis", "Mechanical Ventilation"],
+  "Sodium Bicarbonate": ["Metabolic Acidosis", "Hyperkalemia", "Sodium Channel Blocker Toxicity", "Cardiac Arrest"],
+  "Sodium Phosphate": ["Hypophosphatemia", "Electrolyte Replacement"],
+  "Succinylcholine": ["RSI", "Paralysis"],
+
+  "Tenecteplase": ["STEMI", "Stroke", "Pulmonary Embolism", "Thrombolysis"],
+  "Thiamine": ["Vitamin Deficiency", "Wernicke Encephalopathy", "Alcohol Use Disorder"],
+  "Tigecycline": ["Intra-Abdominal Infection", "Skin/Soft Tissue Infection"],
+  "Tranexamic Acid": ["Bleeding", "Trauma Hemorrhage", "Antifibrinolysis"],
+  "Vancomycin": ["MRSA", "Gram-Positive Infection", "Sepsis"],
+  "Vasopressin": ["Shock", "Vasopressor Support", "GI Bleed"],
+  "Vecuronium": ["Paralysis", "Mechanical Ventilation"],
+  "Voriconazole": ["Fungal Infection", "Aspergillosis"]
+};
+
+medicationLibrary.forEach(medication => {
+  const updatedIndications = medicationIndicationOverrides[medication.genericName];
+
+  if (updatedIndications) {
+    medication.indications = updatedIndications;
+  }
+
+  if (!medication.indications) {
+    medication.indications = [];
+  }
+});
+// =======================================================
+// MEDICATION LIBRARY AUDIT PATCH - PHASE 1
+// Adds missing high-frequency ED/ICU/EMS medications,
+// updates actual medication classes,
+// and strengthens indication filtering.
+// Paste at the very bottom of medications.js.
+// =======================================================
+
+function addOrUpdateMedicationLibraryEntry(newMedication) {
+  const existingMedication = medicationLibrary.find(
+    medication => medication.genericName === newMedication.genericName
+  );
+
+  if (!existingMedication) {
+    medicationLibrary.push(newMedication);
+    return;
+  }
+
+  existingMedication.tradeNames = Array.from(
+    new Set([...(existingMedication.tradeNames || []), ...(newMedication.tradeNames || [])])
+  );
+
+  existingMedication.classes = Array.from(
+    new Set([...(existingMedication.classes || []), ...(newMedication.classes || [])])
+  );
+
+  existingMedication.indications = Array.from(
+    new Set([...(existingMedication.indications || []), ...(newMedication.indications || [])])
+  ).sort();
+
+  existingMedication.commonUse = newMedication.commonUse || existingMedication.commonUse;
+  existingMedication.commonConcentrations = newMedication.commonConcentrations || existingMedication.commonConcentrations;
+  existingMedication.preparationNotes = newMedication.preparationNotes || existingMedication.preparationNotes;
+  existingMedication.keyWarnings = newMedication.keyWarnings || existingMedication.keyWarnings;
+}
+
+function addMedicationIndications(genericName, indicationsToAdd) {
+  const medication = medicationLibrary.find(
+    medication => medication.genericName === genericName
+  );
+
+  if (!medication) return;
+
+  medication.indications = Array.from(
+    new Set([...(medication.indications || []), ...indicationsToAdd])
+  ).sort();
+}
+
+function replaceMedicationClasses(genericName, updatedClasses) {
+  const medication = medicationLibrary.find(
+    medication => medication.genericName === genericName
+  );
+
+  if (!medication) return;
+
+  medication.classes = updatedClasses;
+}
+
+// ---------------------------
+// Missing medication additions
+// ---------------------------
+
+[
+  {
+    genericName: "Aspirin",
+    tradeNames: ["Bayer", "Ecotrin"],
+    classes: ["Antiplatelet", "NSAID", "Salicylate"],
+    indications: ["ACS", "Chest Pain", "STEMI", "NSTEMI", "Antiplatelet Therapy"],
+    commonUse: "Used for antiplatelet therapy in suspected or confirmed acute coronary syndrome when not contraindicated.",
+    commonConcentrations: "Common tablet strengths include 81 mg chewable/low-dose tablets and 325 mg tablets depending on product and facility stock.",
+    preparationNotes: "Typically administered orally. Chewable aspirin is commonly used for ACS protocols when the patient can safely chew and swallow. Verify allergy, bleeding risk, and local protocol.",
+    keyWarnings: "Avoid or use caution with true aspirin allergy, active major bleeding, severe NSAID sensitivity, or protocol-specific contraindications."
+  },
+  {
+    genericName: "Clopidogrel",
+    tradeNames: ["Plavix"],
+    classes: ["Antiplatelet", "P2Y12 Inhibitor"],
+    indications: ["ACS", "STEMI", "NSTEMI", "PCI", "Antiplatelet Therapy"],
+    commonUse: "Used as antiplatelet therapy for selected ACS, PCI, or vascular indications depending on protocol.",
+    commonConcentrations: "Common tablet strengths include 75 mg and 300 mg depending on product and facility stock.",
+    preparationNotes: "Administer orally. Verify loading dose, maintenance dose, bleeding risk, and local cardiology/protocol guidance.",
+    keyWarnings: "Bleeding-risk medication. Verify contraindications, planned procedures, and concurrent anticoagulant/antiplatelet therapy."
+  },
+  {
+    genericName: "Ticagrelor",
+    tradeNames: ["Brilinta"],
+    classes: ["Antiplatelet", "P2Y12 Inhibitor"],
+    indications: ["ACS", "STEMI", "NSTEMI", "PCI", "Antiplatelet Therapy"],
+    commonUse: "Used as antiplatelet therapy for selected ACS or PCI indications depending on protocol.",
+    commonConcentrations: "Common tablet strength: 90 mg.",
+    preparationNotes: "Administer orally. Verify loading/maintenance dose, aspirin coadministration plan, and local cardiology/protocol guidance.",
+    keyWarnings: "Bleeding-risk medication. May cause dyspnea or bradyarrhythmia. Verify contraindications and interacting medications."
+  },
+  {
+    genericName: "Prasugrel",
+    tradeNames: ["Effient"],
+    classes: ["Antiplatelet", "P2Y12 Inhibitor"],
+    indications: ["ACS", "PCI", "Antiplatelet Therapy"],
+    commonUse: "Used as antiplatelet therapy for selected ACS/PCI patients depending on protocol.",
+    commonConcentrations: "Common tablet strengths include 5 mg and 10 mg.",
+    preparationNotes: "Administer orally. Verify patient-specific contraindications and cardiology/protocol guidance before use.",
+    keyWarnings: "Bleeding-risk medication. Avoid/use caution in patients with prior stroke/TIA, advanced age, low body weight, or planned surgery depending on policy."
+  },
+  {
+    genericName: "Cangrelor",
+    tradeNames: ["Kengreal"],
+    classes: ["Antiplatelet", "P2Y12 Inhibitor"],
+    indications: ["PCI", "ACS", "Antiplatelet Therapy"],
+    commonUse: "Used as IV antiplatelet therapy during selected PCI situations.",
+    commonConcentrations: "Supplied as powder vial requiring reconstitution and dilution.",
+    preparationNotes: "Reconstitute and dilute according to product labeling and institutional PCI protocol. Administer by pump.",
+    keyWarnings: "High-alert bleeding-risk medication. Monitor for bleeding and verify transition plan to oral antiplatelet therapy."
+  },
+  {
+    genericName: "Cefdinir",
+    tradeNames: ["Omnicef"],
+    classes: ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+    indications: ["Respiratory Infection", "Skin/Soft Tissue Infection", "Infection"],
+    commonUse: "Oral cephalosporin used for selected outpatient infections.",
+    commonConcentrations: "Common oral capsule and suspension formulations vary by product.",
+    preparationNotes: "Oral medication. Verify allergy history and renal dosing.",
+    keyWarnings: "Check beta-lactam allergy history, renal dosing, and diarrhea/C. difficile risk."
+  },
+  {
+    genericName: "Cefdinir",
+    tradeNames: ["Omnicef"],
+    classes: ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+    indications: ["Respiratory Infection", "Skin/Soft Tissue Infection", "Infection"],
+    commonUse: "Oral cephalosporin used for selected outpatient infections.",
+    commonConcentrations: "Common oral capsule and suspension formulations vary by product.",
+    preparationNotes: "Oral medication. Verify allergy history and renal dosing.",
+    keyWarnings: "Check beta-lactam allergy history, renal dosing, and diarrhea/C. difficile risk."
+  },
+  {
+    genericName: "Cefpodoxime",
+    tradeNames: ["Vantin"],
+    classes: ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+    indications: ["Respiratory Infection", "UTI", "Skin/Soft Tissue Infection", "Infection"],
+    commonUse: "Oral cephalosporin used for selected outpatient infections.",
+    commonConcentrations: "Common oral tablet and suspension formulations vary by product.",
+    preparationNotes: "Oral medication. Verify allergy history and renal dosing.",
+    keyWarnings: "Check beta-lactam allergy history, renal dosing, and diarrhea/C. difficile risk."
+  },
+  {
+    genericName: "Doxycycline",
+    tradeNames: ["Vibramycin"],
+    classes: ["Antibiotic", "Tetracycline"],
+    indications: ["Pneumonia", "Atypical Infection", "Skin/Soft Tissue Infection", "Tick-Borne Illness", "Infection"],
+    commonUse: "Used for selected respiratory, skin/soft tissue, atypical, and tick-borne infections.",
+    commonConcentrations: "Available as oral formulations and IV product depending on facility stock.",
+    preparationNotes: "IV doxycycline requires reconstitution and dilution per product labeling. Oral route is common when appropriate.",
+    keyWarnings: "Avoid or use caution in pregnancy and young children depending on indication/policy. Monitor for photosensitivity, GI upset, and esophagitis."
+  },
+  {
+    genericName: "Cefdinir",
+    tradeNames: ["Omnicef"],
+    classes: ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+    indications: ["Respiratory Infection", "Skin/Soft Tissue Infection", "Infection"],
+    commonUse: "Oral cephalosporin used for selected outpatient infections.",
+    commonConcentrations: "Common oral capsule and suspension formulations vary by product.",
+    preparationNotes: "Oral medication. Verify allergy history and renal dosing.",
+    keyWarnings: "Check beta-lactam allergy history, renal dosing, and diarrhea/C. difficile risk."
+  },
+  {
+    genericName: "Cefpodoxime",
+    tradeNames: ["Vantin"],
+    classes: ["Antibiotic", "Cephalosporin", "Third-Generation Cephalosporin"],
+    indications: ["Respiratory Infection", "UTI", "Skin/Soft Tissue Infection", "Infection"],
+    commonUse: "Oral cephalosporin used for selected outpatient infections.",
+    commonConcentrations: "Common oral tablet and suspension formulations vary by product.",
+    preparationNotes: "Oral medication. Verify allergy history and renal dosing.",
+    keyWarnings: "Check beta-lactam allergy history, renal dosing, and diarrhea/C. difficile risk."
+  },
+  {
+    genericName: "Doxycycline",
+    tradeNames: ["Vibramycin"],
+    classes: ["Antibiotic", "Tetracycline"],
+    indications: ["Pneumonia", "Atypical Infection", "Skin/Soft Tissue Infection", "Tick-Borne Illness", "Infection"],
+    commonUse: "Used for selected respiratory, skin/soft tissue, atypical, and tick-borne infections.",
+    commonConcentrations: "Available as oral formulations and IV product depending on facility stock.",
+    preparationNotes: "IV doxycycline requires reconstitution and dilution per product labeling. Oral route is common when appropriate.",
+    keyWarnings: "Avoid or use caution in pregnancy and young children depending on indication/policy. Monitor for photosensitivity, GI upset, and esophagitis."
+  },
+  {
+    genericName: "Albuterol",
+    tradeNames: ["Proventil", "Ventolin"],
+    classes: ["Bronchodilator", "Beta-2 Adrenergic Agonist"],
+    indications: ["Asthma/COPD", "Bronchospasm", "Hyperkalemia Adjunct", "Respiratory Distress"],
+    commonUse: "Used for bronchospasm in asthma, COPD, or selected hyperkalemia adjunct therapy.",
+    commonConcentrations: "Common nebulizer solution concentrations include unit-dose nebules depending on product and facility stock.",
+    preparationNotes: "Administer by nebulization or inhaler depending on product and protocol. May be combined with ipratropium per respiratory protocol.",
+    keyWarnings: "Monitor heart rate, tremor, potassium when used for hyperkalemia adjunct, and response to therapy."
+  },
+  {
+    genericName: "Ipratropium",
+    tradeNames: ["Atrovent"],
+    classes: ["Bronchodilator", "Anticholinergic"],
+    indications: ["Asthma/COPD", "Bronchospasm", "Respiratory Distress"],
+    commonUse: "Used as bronchodilator adjunct in asthma/COPD exacerbations.",
+    commonConcentrations: "Common nebulizer solution is supplied in unit-dose containers depending on product.",
+    preparationNotes: "Administer by nebulization or inhaler depending on product and protocol. Commonly paired with albuterol in acute bronchospasm protocols.",
+    keyWarnings: "Use caution with anticholinergic sensitivity. Monitor response to therapy."
+  },
+  {
+    genericName: "Terbutaline",
+    tradeNames: ["Brethine"],
+    classes: ["Bronchodilator", "Beta-2 Adrenergic Agonist"],
+    indications: ["Severe Asthma", "Bronchospasm", "Respiratory Distress"],
+    commonUse: "Used for selected severe bronchospasm/asthma protocols.",
+    commonConcentrations: "Common injectable concentration: 1 mg/mL.",
+    preparationNotes: "May be administered subcutaneous or IV depending on protocol. Verify route and dose carefully.",
+    keyWarnings: "Monitor tachycardia, tremor, potassium, and dysrhythmia risk."
+  },
+  {
+    genericName: "Solu-Medrol",
+    tradeNames: ["Methylprednisolone"],
+    classes: ["Corticosteroid", "Glucocorticoid"],
+    indications: ["Asthma/COPD", "Allergic Reaction", "Inflammation", "Shock Adjunct"],
+    commonUse: "Brand-name reference for methylprednisolone. Use generic methylprednisolone entry when possible.",
+    commonConcentrations: "See Methylprednisolone entry.",
+    preparationNotes: "See Methylprednisolone entry.",
+    keyWarnings: "See Methylprednisolone entry."
+  },
+  {
+    genericName: "Dexamethasone",
+    tradeNames: ["Decadron"],
+    classes: ["Corticosteroid", "Glucocorticoid"],
+    indications: ["Asthma/COPD", "Allergic Reaction", "Croup", "Airway Edema", "Inflammation"],
+    commonUse: "Used for airway inflammation, croup, asthma/COPD, allergic reaction adjunct, and other inflammatory indications.",
+    commonConcentrations: "Injectable concentrations vary by product and facility stock.",
+    preparationNotes: "May be administered IV, IM, PO, or nebulized in selected protocols depending on product and indication.",
+    keyWarnings: "Monitor glucose, infection concerns, GI bleeding risk, and steroid-related precautions."
+  },
+  {
+    genericName: "Epinephrine Racemic",
+    tradeNames: ["Vaponefrin"],
+    classes: ["Bronchodilator", "Adrenergic Agonist"],
+    indications: ["Croup", "Upper Airway Edema", "Stridor", "Respiratory Distress"],
+    commonUse: "Used by nebulization for selected upper airway edema, croup, or stridor protocols.",
+    commonConcentrations: "Common product concentration varies by formulation; verify vial label.",
+    preparationNotes: "Administer by nebulization according to protocol. Monitor for rebound symptoms and cardiovascular effects.",
+    keyWarnings: "Monitor heart rate, blood pressure, respiratory status, and recurrence of stridor."
+  },
+  {
+    genericName: "Oxytocin",
+    tradeNames: ["Pitocin"],
+    classes: ["Uterotonic", "Hormone"],
+    indications: ["Postpartum Hemorrhage", "OB", "Uterine Atony"],
+    commonUse: "Used for prevention or treatment of postpartum hemorrhage related to uterine atony and other OB indications.",
+    commonConcentrations: "Commonly supplied as 10 units/mL vial; infusion concentrations are facility-specific.",
+    preparationNotes: "Commonly diluted in NS or LR for infusion depending on OB protocol. Verify dose, route, and indication.",
+    keyWarnings: "Monitor uterine tone, bleeding, blood pressure, and fluid status. High-alert in OB use."
+  },
+  {
+    genericName: "Carboprost",
+    tradeNames: ["Hemabate"],
+    classes: ["Uterotonic", "Prostaglandin"],
+    indications: ["Postpartum Hemorrhage", "OB", "Uterine Atony"],
+    commonUse: "Used for selected postpartum hemorrhage protocols.",
+    commonConcentrations: "Common injectable concentration: 250 mcg/mL.",
+    preparationNotes: "Usually administered IM according to OB protocol.",
+    keyWarnings: "Use caution/avoid in asthma depending on policy. Monitor GI effects, fever, bronchospasm, and bleeding response."
+  },
+  {
+    genericName: "Methylergonovine",
+    tradeNames: ["Methergine"],
+    classes: ["Uterotonic", "Ergot Alkaloid"],
+    indications: ["Postpartum Hemorrhage", "OB", "Uterine Atony"],
+    commonUse: "Used for selected postpartum hemorrhage protocols.",
+    commonConcentrations: "Common injectable concentration: 0.2 mg/mL.",
+    preparationNotes: "Usually administered IM; IV use requires extreme caution and policy-specific guidance.",
+    keyWarnings: "Avoid/use caution with hypertension or preeclampsia depending on policy. Monitor blood pressure and uterine response."
+  },
+  {
+    genericName: "Misoprostol",
+    tradeNames: ["Cytotec"],
+    classes: ["Uterotonic", "Prostaglandin"],
+    indications: ["Postpartum Hemorrhage", "OB"],
+    commonUse: "Used in selected OB/postpartum hemorrhage protocols.",
+    commonConcentrations: "Common tablet strengths vary by product.",
+    preparationNotes: "Administer by protocol-specific route such as oral, buccal, sublingual, vaginal, or rectal depending on indication.",
+    keyWarnings: "Monitor bleeding response, uterine tone, fever/chills, GI effects, and contraindications."
+  },
+  {
+    genericName: "Labetalol Oral",
+    tradeNames: ["Trandate"],
+    classes: ["Beta Blocker", "Alpha-1 Blocker", "Antihypertensive"],
+    indications: ["Hypertension", "Preeclampsia", "Blood Pressure Control"],
+    commonUse: "Oral reference entry for selected hypertension/preeclampsia protocols when oral medication is ordered.",
+    commonConcentrations: "Common oral tablet strengths vary.",
+    preparationNotes: "Administer orally. Verify indication and route before selecting oral versus IV labetalol.",
+    keyWarnings: "Monitor blood pressure, heart rate, bronchospasm risk, heart block, and heart failure concerns."
+  },
+  {
+    genericName: "Magnesium Chloride",
+    tradeNames: [],
+    classes: ["Electrolyte", "Magnesium Salt"],
+    indications: ["Hypomagnesemia", "Electrolyte Replacement"],
+    commonUse: "Used for magnesium replacement depending on facility stock and protocol.",
+    commonConcentrations: "Concentration varies by product and facility.",
+    preparationNotes: "Dilution and infusion rate vary by product. Verify label, dose, and protocol.",
+    keyWarnings: "Monitor renal function, respiratory status, blood pressure, and magnesium level."
+  },
+  {
+    genericName: "Dextrose 25%",
+    tradeNames: [],
+    classes: ["Carbohydrate", "Glucose Supplement"],
+    indications: ["Hypoglycemia", "Pediatric Hypoglycemia", "Glucose Support"],
+    commonUse: "Used for glucose support or pediatric hypoglycemia protocols depending on facility policy.",
+    commonConcentrations: "Commonly prepared from D50 or supplied as 25% dextrose depending on setting.",
+    preparationNotes: "Verify concentration and route. Pediatric dextrose concentrations are protocol-specific.",
+    keyWarnings: "Hypertonic solution. Monitor blood glucose and IV site closely."
+  },
+  {
+    genericName: "Dextrose 5%",
+    tradeNames: ["D5W"],
+    classes: ["Crystalloid", "Dextrose-Containing Fluid"],
+    indications: ["Diluent", "Maintenance Fluid", "Medication Dilution"],
+    commonUse: "Used as IV fluid or diluent for compatible medications.",
+    commonConcentrations: "5% dextrose in water.",
+    preparationNotes: "Verify medication compatibility before using as diluent.",
+    keyWarnings: "Not an initial resuscitation fluid for shock. Monitor glucose and sodium when clinically relevant."
+  },
+  {
+    genericName: "0.9% Sodium Chloride",
+    tradeNames: ["Normal Saline", "NS"],
+    classes: ["Crystalloid", "Isotonic Fluid"],
+    indications: ["Diluent", "Fluid Resuscitation", "Medication Dilution"],
+    commonUse: "Used for fluid resuscitation, line flushes, and medication dilution when compatible.",
+    commonConcentrations: "0.9% sodium chloride solution.",
+    preparationNotes: "Verify medication compatibility before using as diluent.",
+    keyWarnings: "Monitor sodium/chloride load and fluid status, especially with large-volume administration."
+  },
+  {
+    genericName: "Lactated Ringers",
+    tradeNames: ["LR", "Hartmann Solution"],
+    classes: ["Crystalloid", "Balanced Crystalloid"],
+    indications: ["Fluid Resuscitation", "Burns", "Trauma", "Dehydration", "Diluent"],
+    commonUse: "Used as balanced crystalloid for fluid resuscitation or volume support in selected protocols.",
+    commonConcentrations: "Balanced crystalloid solution with sodium, chloride, lactate, potassium, and calcium depending on product.",
+    preparationNotes: "Verify medication compatibility before using as diluent because calcium-containing fluids can be incompatible with some medications.",
+    keyWarnings: "Use caution with compatibility-sensitive medications and selected electrolyte/renal concerns depending on clinical context."
+  }
+].forEach(addOrUpdateMedicationLibraryEntry);
+
+// ---------------------------
+// High-yield indication updates
+// ---------------------------
+
+const phase1IndicationUpdates = {
+  "Acetaminophen": ["Pain", "Fever", "Non-Opioid Analgesia"],
+  "Acetylcysteine": ["Acetaminophen Toxicity", "Toxicology", "Overdose"],
+  "Adenosine": ["SVT", "Narrow-Complex Tachycardia", "Tachycardia", "Diagnostic Rhythm Evaluation"],
+  "Albumin": ["Volume Expansion", "Hypoalbuminemia", "Oncotic Support", "Shock Adjunct"],
+  "Alteplase": ["Stroke", "Pulmonary Embolism", "STEMI", "Thrombolysis", "Catheter Clearance", "Cardiac Arrest"],
+  "Amikacin": ["Sepsis", "Gram-Negative Infection", "Resistant Infection"],
+  "Aminocaproic Acid": ["Bleeding", "Hyperfibrinolysis", "Antifibrinolysis"],
+  "Amiodarone": ["Cardiac Arrest", "Ventricular Tachycardia", "Ventricular Fibrillation", "Wide-Complex Tachycardia", "Atrial Dysrhythmia", "ACLS"],
+  "Ampicillin": ["Sepsis", "Meningitis", "Infection"],
+  "Ampicillin/Sulbactam": ["Sepsis", "Skin/Soft Tissue Infection", "Intra-Abdominal Infection", "Aspiration", "Infection"],
+  "Argatroban": ["Anticoagulation", "HIT", "Thrombosis"],
+  "Azithromycin": ["Pneumonia", "Atypical Infection", "Respiratory Infection", "Sepsis"],
+  "Bivalirudin": ["Anticoagulation", "PCI", "HIT", "ACS"],
+  "Bumetanide": ["Fluid Overload", "Pulmonary Edema", "Diuresis", "Heart Failure"],
+
+  "Calcium Chloride": ["Hyperkalemia", "Hypocalcemia", "Calcium Channel Blocker Toxicity", "Cardiac Arrest", "Hypermagnesemia", "Toxicology"],
+  "Calcium Gluconate": ["Hyperkalemia", "Hypocalcemia", "Magnesium Toxicity", "Calcium Channel Blocker Toxicity", "Hydrofluoric Acid Exposure", "Toxicology"],
+  "Caspofungin": ["Fungal Infection", "Candida", "Invasive Fungal Infection", "Sepsis"],
+  "Cefazolin": ["Skin/Soft Tissue Infection", "Surgical Prophylaxis", "Open Fracture", "Trauma", "Infection"],
+  "Cefepime": ["Sepsis", "Pseudomonas Coverage", "Pneumonia", "Neutropenic Fever", "Broad-Spectrum Infection"],
+  "Cefotaxime": ["Infection", "Meningitis", "Sepsis"],
+  "Ceftaroline": ["MRSA", "Skin/Soft Tissue Infection", "Pneumonia", "Infection"],
+  "Ceftazidime": ["Pseudomonas Coverage", "Sepsis", "Pneumonia", "Gram-Negative Infection"],
+  "Ceftriaxone": ["Sepsis", "Pneumonia", "Meningitis", "UTI", "Infection", "STI"],
+  "Cefuroxime": ["Respiratory Infection", "Skin/Soft Tissue Infection", "Infection"],
+  "Ciprofloxacin": ["UTI", "Gram-Negative Infection", "Intra-Abdominal Infection", "Sepsis"],
+  "Clevidipine": ["Hypertension", "Hypertensive Emergency", "Blood Pressure Control"],
+  "Clindamycin": ["Skin/Soft Tissue Infection", "Anaerobic Infection", "Dental Infection", "Toxin Suppression", "Sepsis"],
+  "Daptomycin": ["MRSA", "VRE", "Gram-Positive Infection", "Sepsis"],
+
+  "Dexmedetomidine": ["Sedation", "ICU Sedation", "Procedural Sedation", "Agitation"],
+  "Dextrose 10%": ["Hypoglycemia", "Glucose Support", "Hyperkalemia Adjunct"],
+  "Dextrose 20%": ["Hypoglycemia", "Glucose Support"],
+  "Dextrose 50%": ["Severe Hypoglycemia", "Hyperkalemia Adjunct", "Glucose Support"],
+  "Diazepam": ["Seizure", "Status Epilepticus", "Sedation", "Alcohol Withdrawal", "Toxicology"],
+  "Digoxin": ["Rate Control", "Heart Failure", "Atrial Fibrillation"],
+  "Diltiazem": ["Atrial Fibrillation", "Atrial Flutter", "SVT", "Rate Control", "Tachycardia"],
+  "Diphenhydramine": ["Allergic Reaction", "Anaphylaxis Adjunct", "Dystonic Reaction", "Pruritus", "Antiemetic Adjunct"],
+  "Dobutamine": ["Cardiogenic Shock", "Heart Failure", "Low Cardiac Output", "Shock"],
+  "Dopamine": ["Shock", "Hypotension", "Bradycardia", "Vasopressor Support"],
+
+  "Enalaprilat": ["Hypertension", "Afterload Reduction", "Blood Pressure Control"],
+  "Epinephrine": ["Cardiac Arrest", "Anaphylaxis", "Shock", "Severe Asthma", "Bradycardia", "ACLS", "Hypotension"],
+  "Eptifibatide": ["ACS", "PCI", "Antiplatelet Therapy"],
+  "Ertapenem": ["Sepsis", "Intra-Abdominal Infection", "Skin/Soft Tissue Infection", "UTI", "Infection"],
+  "Esmolol": ["Tachycardia", "Hypertension", "Rate Control", "Aortic Dissection", "SVT"],
+  "Etomidate": ["RSI", "Induction", "Procedural Sedation", "Airway"],
+  "Famotidine": ["Acid Suppression", "GI Prophylaxis", "Allergic Reaction Adjunct"],
+  "Fentanyl": ["Pain", "Analgesia", "Sedation Adjunct", "Post-Intubation Analgesia", "ACS", "Chest Pain", "Trauma Pain"],
+  "Fluconazole": ["Fungal Infection", "Candida", "Sepsis"],
+  "Fosphenytoin": ["Seizure", "Status Epilepticus", "Seizure Prophylaxis"],
+  "Furosemide": ["Fluid Overload", "Pulmonary Edema", "Diuresis", "Heart Failure"],
+
+  "Gentamicin": ["Sepsis", "Gram-Negative Infection", "Resistant Infection"],
+  "Glucagon": ["Hypoglycemia", "Beta Blocker Toxicity", "Calcium Channel Blocker Toxicity", "Toxicology"],
+  "Haloperidol": ["Agitation", "Delirium", "Nausea", "Behavioral Emergency"],
+  "Heparin": ["ACS", "STEMI", "NSTEMI", "Anticoagulation", "VTE", "DVT", "Pulmonary Embolism", "Thrombosis"],
+  "Hydralazine": ["Hypertension", "Blood Pressure Control", "Preeclampsia"],
+  "Hydrocortisone": ["Adrenal Crisis", "Allergic Reaction", "Anaphylaxis Adjunct", "Shock Adjunct", "Asthma/COPD"],
+  "Hydromorphone": ["Pain", "Analgesia", "Trauma Pain", "Severe Pain"],
+  "Hydroxocobalamin": ["Cyanide Poisoning", "Smoke Inhalation", "Toxicology"],
+  "Immune Globulin IV": ["Immunodeficiency", "Autoimmune Disease", "Neurologic Disease"],
+  "Infliximab": ["Autoimmune Disease", "Inflammatory Bowel Disease"],
+  "Insulin Regular": ["Hyperglycemia", "DKA", "HHS", "Hyperkalemia", "Antihyperglycemic Therapy"],
+
+  "Ketamine": ["Pain", "Analgesia", "Procedural Sedation", "RSI", "Induction", "Post-Intubation Sedation", "Agitation", "Excited Delirium"],
+  "Ketorolac": ["Pain", "Non-Opioid Analgesia", "Renal Colic", "Migraine Adjunct"],
+  "Labetalol": ["Hypertension", "Blood Pressure Control", "Preeclampsia", "Aortic Dissection"],
+  "Levetiracetam": ["Seizure", "Status Epilepticus", "Seizure Prophylaxis"],
+  "Levofloxacin": ["Pneumonia", "UTI", "Respiratory Infection", "Sepsis"],
+  "Lidocaine": ["Cardiac Arrest", "Ventricular Dysrhythmia", "Ventricular Tachycardia", "Ventricular Fibrillation", "Local Anesthesia", "Pain", "ACLS"],
+  "Linezolid": ["MRSA", "VRE", "Gram-Positive Infection", "Sepsis"],
+  "Lorazepam": ["Seizure", "Status Epilepticus", "Agitation", "Sedation", "Alcohol Withdrawal"],
+
+  "Magnesium Sulfate": ["Torsades de Pointes", "Hypomagnesemia", "Severe Asthma", "Eclampsia", "Seizure", "Electrolyte Replacement"],
+  "Mannitol": ["Increased Intracranial Pressure", "Cerebral Edema", "Osmotic Diuresis"],
+  "Meropenem": ["Sepsis", "Broad-Spectrum Infection", "Resistant Infection", "Meningitis"],
+  "Methocarbamol": ["Muscle Spasm", "Musculoskeletal Pain"],
+  "Methylene Blue": ["Methemoglobinemia", "Vasoplegia", "Toxicology"],
+  "Methylprednisolone": ["Allergic Reaction", "Asthma/COPD", "Inflammation", "Shock Adjunct", "Anaphylaxis Adjunct"],
+  "Metoclopramide": ["Nausea", "Vomiting", "Migraine Adjunct", "Gastroparesis"],
+  "Metoprolol": ["ACS", "Rate Control", "Hypertension", "Atrial Fibrillation", "Tachycardia"],
+  "Metronidazole": ["Anaerobic Infection", "Intra-Abdominal Infection", "C. difficile", "Sepsis"],
+  "Micafungin": ["Fungal Infection", "Candida", "Invasive Fungal Infection", "Sepsis"],
+  "Midazolam": ["Sedation", "Seizure", "Status Epilepticus", "RSI Adjunct", "Post-Intubation Sedation", "Agitation"],
+  "Milrinone": ["Heart Failure", "Low Cardiac Output", "Cardiogenic Shock"],
+  "Morphine": ["Pain", "Analgesia", "Palliative Dyspnea", "ACS", "Chest Pain", "Trauma Pain"],
+
+  "Naloxone": ["Opioid Overdose", "Respiratory Depression", "Toxicology", "Altered Mental Status"],
+  "Nicardipine": ["Hypertension", "Blood Pressure Control", "Stroke Blood Pressure Management", "Hypertensive Emergency"],
+  "Nitroglycerin": ["ACS", "Chest Pain", "STEMI", "NSTEMI", "Pulmonary Edema", "Hypertension", "Hypertensive Emergency"],
+  "Nitroprusside": ["Hypertensive Emergency", "Blood Pressure Control"],
+  "Norepinephrine": ["Shock", "Hypotension", "Septic Shock", "Vasopressor Support", "Cardiogenic Shock"],
+  "Octreotide": ["Variceal Bleeding", "GI Bleed", "Endocrine Indication"],
+  "Ondansetron": ["Nausea", "Vomiting", "Antiemetic", "ACS Supportive Care", "Pain Medication Adjunct"],
+  "Pantoprazole": ["GI Bleed", "Acid Suppression", "Stress Ulcer Prophylaxis"],
+  "Penicillin G": ["Infection", "Syphilis", "Streptococcal Infection"],
+  "Phenobarbital": ["Seizure", "Status Epilepticus", "Alcohol Withdrawal"],
+  "Phenylephrine": ["Hypotension", "Shock", "Vasopressor Support"],
+  "Phenytoin": ["Seizure", "Status Epilepticus", "Seizure Prophylaxis"],
+
+  "Piperacillin/Tazobactam": ["Sepsis", "Broad-Spectrum Infection", "Intra-Abdominal Infection", "Pneumonia", "Aspiration", "Pseudomonas Coverage"],
+  "Potassium Chloride": ["Hypokalemia", "Electrolyte Replacement"],
+  "Procainamide": ["Wide-Complex Tachycardia", "Ventricular Tachycardia", "Atrial Dysrhythmia", "ACLS"],
+  "Promethazine": ["Nausea", "Vomiting", "Allergic Reaction Adjunct"],
+  "Propofol": ["Sedation", "Induction", "Post-Intubation Sedation", "Procedural Sedation"],
+  "Protamine": ["Heparin Reversal", "Anticoagulant Reversal"],
+  "Rocuronium": ["RSI", "Paralysis", "Mechanical Ventilation", "Airway"],
+  "Sodium Bicarbonate": ["Metabolic Acidosis", "Hyperkalemia", "Sodium Channel Blocker Toxicity", "Cardiac Arrest", "Toxicology"],
+  "Sodium Phosphate": ["Hypophosphatemia", "Electrolyte Replacement"],
+  "Succinylcholine": ["RSI", "Paralysis", "Airway"],
+
+  "Tenecteplase": ["STEMI", "Stroke", "Pulmonary Embolism", "Thrombolysis", "Cardiac Arrest"],
+  "Thiamine": ["Vitamin Deficiency", "Wernicke Encephalopathy", "Alcohol Use Disorder", "Malnutrition"],
+  "Tigecycline": ["Intra-Abdominal Infection", "Skin/Soft Tissue Infection", "Resistant Infection"],
+  "Tranexamic Acid": ["Bleeding", "Trauma Hemorrhage", "Antifibrinolysis", "Postpartum Hemorrhage"],
+  "Vancomycin": ["MRSA", "Gram-Positive Infection", "Sepsis", "Meningitis"],
+  "Vasopressin": ["Shock", "Vasopressor Support", "GI Bleed", "Septic Shock"],
+  "Vecuronium": ["Paralysis", "Mechanical Ventilation", "Airway"],
+  "Voriconazole": ["Fungal Infection", "Aspergillosis", "Invasive Fungal Infection"]
+};
+
+Object.keys(phase1IndicationUpdates).forEach(genericName => {
+  addMedicationIndications(genericName, phase1IndicationUpdates[genericName]);
+});
+
+// ---------------------------
+// Class cleanup / corrections
+// These overwrite old indication-style classes.
+// ---------------------------
+
+const phase1ClassCorrections = {
+  "Aspirin": ["Antiplatelet", "NSAID", "Salicylate"],
+  "Clopidogrel": ["Antiplatelet", "P2Y12 Inhibitor"],
+  "Ticagrelor": ["Antiplatelet", "P2Y12 Inhibitor"],
+  "Prasugrel": ["Antiplatelet", "P2Y12 Inhibitor"],
+  "Cangrelor": ["Antiplatelet", "P2Y12 Inhibitor"],
+  "Morphine": ["Opioid Analgesic"],
+  "Fentanyl": ["Opioid Analgesic"],
+  "Hydromorphone": ["Opioid Analgesic"],
+  "Nitroglycerin": ["Nitrate", "Vasodilator"],
+  "Heparin": ["Anticoagulant"],
+  "Eptifibatide": ["Antiplatelet", "Glycoprotein IIb/IIIa Inhibitor"],
+  "Alteplase": ["Thrombolytic", "Fibrinolytic"],
+  "Tenecteplase": ["Thrombolytic", "Fibrinolytic"],
+  "Metoprolol": ["Beta Blocker", "Antihypertensive"],
+  "Labetalol": ["Beta Blocker", "Alpha-1 Blocker", "Antihypertensive"],
+  "Diltiazem": ["Calcium Channel Blocker", "Rate Control Agent"],
+  "Amiodarone": ["Antiarrhythmic", "Class III Antiarrhythmic"],
+  "Lidocaine": ["Antiarrhythmic", "Class Ib Antiarrhythmic", "Local Anesthetic"],
+  "Procainamide": ["Antiarrhythmic", "Class Ia Antiarrhythmic"],
+  "Adenosine": ["Antiarrhythmic", "Nucleoside"],
+  "Epinephrine": ["Vasopressor", "Catecholamine", "Adrenergic Agonist"],
+  "Norepinephrine": ["Vasopressor", "Catecholamine", "Adrenergic Agonist"],
+  "Dopamine": ["Vasopressor", "Inotrope", "Catecholamine"],
+  "Dobutamine": ["Inotrope", "Beta-1 Adrenergic Agonist"],
+  "Vasopressin": ["Vasopressor", "Antidiuretic Hormone Analog"],
+  "Phenylephrine": ["Vasopressor", "Alpha-1 Adrenergic Agonist"],
+  "Milrinone": ["Inotrope", "Phosphodiesterase-3 Inhibitor"],
+  "Etomidate": ["Sedative-Hypnotic", "Induction Agent"],
+  "Ketamine": ["Dissociative Anesthetic", "NMDA Receptor Antagonist"],
+  "Midazolam": ["Benzodiazepine", "Sedative", "Anticonvulsant"],
+  "Lorazepam": ["Benzodiazepine", "Sedative", "Anticonvulsant"],
+  "Diazepam": ["Benzodiazepine", "Sedative", "Anticonvulsant"],
+  "Propofol": ["Sedative-Hypnotic", "General Anesthetic"],
+  "Dexmedetomidine": ["Sedative", "Alpha-2 Adrenergic Agonist"],
+  "Rocuronium": ["Neuromuscular Blocker", "Nondepolarizing Paralytic"],
+  "Vecuronium": ["Neuromuscular Blocker", "Nondepolarizing Paralytic"],
+  "Succinylcholine": ["Neuromuscular Blocker", "Depolarizing Paralytic"],
+  "Albuterol": ["Bronchodilator", "Beta-2 Adrenergic Agonist"],
+  "Ipratropium": ["Bronchodilator", "Anticholinergic"],
+  "Terbutaline": ["Bronchodilator", "Beta-2 Adrenergic Agonist"],
+  "Methylprednisolone": ["Corticosteroid", "Glucocorticoid"],
+  "Hydrocortisone": ["Corticosteroid", "Glucocorticoid"],
+  "Dexamethasone": ["Corticosteroid", "Glucocorticoid"],
+  "Magnesium Sulfate": ["Electrolyte", "Magnesium Salt"],
+  "Calcium Chloride": ["Electrolyte", "Calcium Salt"],
+  "Calcium Gluconate": ["Electrolyte", "Calcium Salt"],
+  "Potassium Chloride": ["Electrolyte", "Potassium Salt"],
+  "Sodium Bicarbonate": ["Alkalinizing Agent", "Electrolyte"],
+  "Insulin Regular": ["Insulin", "Antihyperglycemic Agent"],
+  "Dextrose 10%": ["Carbohydrate", "Glucose Supplement"],
+  "Dextrose 20%": ["Carbohydrate", "Glucose Supplement"],
+  "Dextrose 25%": ["Carbohydrate", "Glucose Supplement"],
+  "Dextrose 50%": ["Carbohydrate", "Glucose Supplement"],
+  "Naloxone": ["Antidote", "Opioid Antagonist"],
+  "Hydroxocobalamin": ["Antidote", "Vitamin B12 Analog"],
+  "Methylene Blue": ["Antidote", "Dye"],
+  "Glucagon": ["Hormone", "Antihypoglycemic Agent"],
+  "Ondansetron": ["Antiemetic", "5-HT3 Antagonist"],
+  "Metoclopramide": ["Antiemetic", "Prokinetic", "Dopamine Antagonist"],
+  "Promethazine": ["Antihistamine", "Phenothiazine", "Antiemetic"],
+  "Diphenhydramine": ["Antihistamine", "H1 Antagonist"],
+  "Famotidine": ["Histamine-2 Receptor Antagonist", "Acid Suppressant"],
+  "Pantoprazole": ["Proton Pump Inhibitor"],
+  "Furosemide": ["Diuretic", "Loop Diuretic"],
+  "Bumetanide": ["Diuretic", "Loop Diuretic"],
+  "Mannitol": ["Osmotic Diuretic"],
+  "Oxytocin": ["Uterotonic", "Hormone"],
+  "Carboprost": ["Uterotonic", "Prostaglandin"],
+  "Methylergonovine": ["Uterotonic", "Ergot Alkaloid"],
+  "Misoprostol": ["Uterotonic", "Prostaglandin"]
+};
+
+Object.keys(phase1ClassCorrections).forEach(genericName => {
+  replaceMedicationClasses(genericName, phase1ClassCorrections[genericName]);
+});
+
+// ---------------------------
+// Remove duplicates by genericName if any were introduced.
+// ---------------------------
+
+const deduplicatedMedicationLibrary = [];
+const seenMedicationNames = new Set();
+
+medicationLibrary.forEach(medication => {
+  if (!seenMedicationNames.has(medication.genericName)) {
+    deduplicatedMedicationLibrary.push(medication);
+    seenMedicationNames.add(medication.genericName);
+  }
+});
+
+medicationLibrary.length = 0;
+deduplicatedMedicationLibrary.forEach(medication => medicationLibrary.push(medication));
