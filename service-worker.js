@@ -1,4 +1,4 @@
-const CACHE_NAME = "med-calculator-v15";
+const CACHE_NAME = "med-calculator-v20";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",

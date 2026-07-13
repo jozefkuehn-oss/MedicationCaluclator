@@ -18,13 +18,14 @@
   <div class="header">
     <h1>Medication Calculator</h1>
     <p>Infusion + Draw-Up Tools</p>
-    <p style="font-size: 12px; opacity: 0.8;">Version 1.1.5</p>
+    <p style="font-size: 12px; opacity: 0.8;">Version 1.2.0</p>
   </div>
 <main class="app">
-    <div class="tabs">
+<div class="tabs">
   <button class="tab-button active" id="showDraw">Draw-Up/Dose</button>
   <button class="tab-button" id="showInfusion">Pump Infusion</button>
   <button class="tab-button" id="showEMS">EMS Drip</button>
+  <button class="tab-button" id="showMedicationLibrary">Medication Library</button>
 </div>
     <section class="card hidden" id="infusionSection">
       <h2>Infusion Calculator</h2>
@@ -58,6 +59,13 @@
 </select>
       <label for="totalVolume">Total Volume (mL)</label>
       <input type="number" id="totalVolume" placeholder="Example: 100" />
+      <label for="diluent">Diluent / Fluid</label>
+<select id="diluent">
+  <option value="">Select diluent</option>
+  <option value="NS">NS — 0.9% Sodium Chloride</option>
+  <option value="D5W">D5W — 5% Dextrose in Water</option>
+  <option value="LR">LR — Lactated Ringers</option>
+</select>
       <label for="vtbi">VTBI Desired</label>
       <input type="number" id="vtbi" placeholder="Example: 100" />
       <label for="duration">Desired Duration <spam class=optional-note">(optional for continuous)</spam></label>
@@ -202,6 +210,13 @@
 
   <label for="emsTotalVolume">Total Volume (mL)</label>
   <input type="number" id="emsTotalVolume" placeholder="Example: 250" />
+  <label for="emsDiluent">Diluent / Fluid</label>
+<select id="emsDiluent">
+  <option value="">Select diluent</option>
+  <option value="NS">NS — 0.9% Sodium Chloride</option>
+  <option value="D5W">D5W — 5% Dextrose in Water</option>
+  <option value="LR">LR — Lactated Ringers</option>
+</select>
 
   <label for="emsVtbi">VTBI Desired</label>
   <input type="number" id="emsVtbi" placeholder="Example: 250" />
@@ -252,6 +267,46 @@
   <p class="warning">
     Gravity drip rates are estimates. Verify medication, concentration, drip factor, dose, patient condition, and local protocol.
   </p>
+</section>
+<section class="card hidden" id="medicationLibrarySection">
+  <h2>Medication Library</h2>
+
+  <p class="section-help">
+    Search, filter, or select a medication to view available medication information.
+  </p>
+
+  <label for="medicationSearch">Search Medication Name</label>
+  <input type="text" id="medicationSearch" placeholder="Search medication name..." />
+
+  <label for="medicationClassFilter">Filter by Class</label>
+  <select id="medicationClassFilter">
+    <option value="">All Classes</option>
+  </select>
+
+  <label for="medicationLibrarySelect">Select Medication</label>
+  <select id="medicationLibrarySelect">
+    <option value="">Select Medication</option>
+  </select>
+
+  <div class="result medication-card" id="medicationLibraryCard">
+    <h3>Medication Information</h3>
+
+    <p><strong>Medication Name:</strong> <span id="libraryMedicationName">--</span></p>
+    <p><strong>Trade Name:</strong> <span id="libraryTradeName">--</span></p>
+    <p><strong>Class:</strong> <span id="libraryMedicationClass">--</span></p>
+
+    <p class="small-result"><strong>Common Use:</strong> <span id="libraryCommonUse">Not added yet.</span></p>
+    <p class="small-result"><strong>Common Concentrations:</strong> <span id="libraryCommonConcentrations">Not added yet.</span></p>
+    <p class="small-result"><strong>Preparation Notes:</strong> <span id="libraryPreparationNotes">Not added yet.</span></p>
+    <p class="small-result"><strong>Key Warnings:</strong> <span id="libraryKeyWarnings">Not added yet.</span></p>
+  </div>
+
+  <div class="result medication-list-panel">
+    <h3>Matching List</h3>
+    <div id="medicationLibraryList">
+      Medication list will appear here.
+    </div>
+  </div>
 </section>
 </main>
 <script src="medications.js"></script>

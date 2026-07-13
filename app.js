@@ -58,10 +58,236 @@ function populateAllMedicationDropdowns() {
   populateMedicationDropdown("infusionMedication");
   populateMedicationDropdown("emsMedication");
 }
+function getAllMedicationClasses() {
+  const classSet = new Set();
+
+  medicationLibrary.forEach(medication => {
+    if (medication.classes && medication.classes.length > 0) {
+      medication.classes.forEach(className => classSet.add(className));
+    }
+  });
+
+  return Array.from(classSet).sort();
+}
+
+function populateMedicationClassFilter() {
+  const classFilter = document.getElementById("medicationClassFilter");
+  if (!classFilter) return;
+
+  classFilter.innerHTML = "";
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "All Classes";
+  classFilter.appendChild(defaultOption);
+
+  getAllMedicationClasses().forEach(className => {
+    const option = document.createElement("option");
+    option.value = className;
+    option.textContent = className;
+    classFilter.appendChild(option);
+  });
+}
+
+function getFilteredMedications() {
+  const searchInput = document.getElementById("medicationSearch");
+  const classFilter = document.getElementById("medicationClassFilter");
+
+  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
+  const selectedClass = classFilter ? classFilter.value : "";
+
+  return medicationLibrary.filter(medication => {
+    const displayName = getMedicationDisplayName(medication).toLowerCase();
+
+    const matchesSearch =
+      !searchText ||
+      medication.genericName.toLowerCase().includes(searchText) ||
+      displayName.includes(searchText) ||
+      medication.tradeNames.some(tradeName =>
+        tradeName.toLowerCase().includes(searchText)
+      );
+
+    const matchesClass =
+      !selectedClass ||
+      medication.classes.includes(selectedClass);
+
+    return matchesSearch && matchesClass;
+  });
+}
+
+function populateMedicationLibrarySelect(filteredMedications) {
+  const select = document.getElementById("medicationLibrarySelect");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "Select Medication";
+  select.appendChild(defaultOption);
+
+  filteredMedications.forEach(medication => {
+    const option = document.createElement("option");
+    option.value = medication.genericName;
+    option.textContent = getMedicationDisplayName(medication);
+    select.appendChild(option);
+  });
+}
+
+function renderMedicationLibraryList(filteredMedications) {
+  const list = document.getElementById("medicationLibraryList");
+  if (!list) return;
+
+  if (filteredMedications.length === 0) {
+    list.innerHTML = "<p>No medications found.</p>";
+    return;
+  }
+
+  list.innerHTML = filteredMedications
+    .map(medication => {
+      return `
+        <div class="medication-list-item" data-medication-name="${medication.genericName}">
+          <div class="medication-list-name">${getMedicationDisplayName(medication)}</div>
+          <div class="medication-list-class">${medication.classes.join(", ")}</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll(".medication-list-item").forEach(item => {
+    item.addEventListener("click", function () {
+      const medicationName = this.getAttribute("data-medication-name");
+      showMedicationDetails(medicationName);
+
+      const select = document.getElementById("medicationLibrarySelect");
+      if (select) select.value = medicationName;
+    });
+  });
+}
+
+function showMedicationDetails(genericName) {
+  const medication = medicationLibrary.find(med => med.genericName === genericName);
+
+  const medicationName = document.getElementById("libraryMedicationName");
+  const tradeName = document.getElementById("libraryTradeName");
+  const medicationClass = document.getElementById("libraryMedicationClass");
+  const commonUse = document.getElementById("libraryCommonUse");
+  const commonConcentrations = document.getElementById("libraryCommonConcentrations");
+  const preparationNotes = document.getElementById("libraryPreparationNotes");
+  const keyWarnings = document.getElementById("libraryKeyWarnings");
+
+  if (!medication) {
+    if (medicationName) medicationName.textContent = "--";
+    if (tradeName) tradeName.textContent = "--";
+    if (medicationClass) medicationClass.textContent = "--";
+    if (commonUse) commonUse.textContent = "Not added yet.";
+    if (commonConcentrations) commonConcentrations.textContent = "Not added yet.";
+    if (preparationNotes) preparationNotes.textContent = "Not added yet.";
+    if (keyWarnings) keyWarnings.textContent = "Not added yet.";
+    return;
+  }
+
+  if (medicationName) medicationName.textContent = medication.genericName;
+  if (tradeName) {
+    tradeName.textContent =
+      medication.tradeNames && medication.tradeNames.length > 0
+        ? medication.tradeNames.join(", ")
+        : "--";
+  }
+
+  if (medicationClass) medicationClass.textContent = medication.classes.join(", ");
+
+  if (commonUse) commonUse.textContent = medication.commonUse || "Not added yet.";
+  if (commonConcentrations) commonConcentrations.textContent = medication.commonConcentrations || "Not added yet.";
+  if (preparationNotes) preparationNotes.textContent = medication.preparationNotes || "Not added yet.";
+  if (keyWarnings) keyWarnings.textContent = medication.keyWarnings || "Not added yet.";
+}
+
+function updateMedicationLibraryView() {
+  const filteredMedications = getFilteredMedications();
+
+  populateMedicationLibrarySelect(filteredMedications);
+  renderMedicationLibraryList(filteredMedications);
+
+  const searchInput = document.getElementById("medicationSearch");
+  const medicationSelect = document.getElementById("medicationLibrarySelect");
+
+  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+  const exactMatch = medicationLibrary.find(medication => {
+    const genericName = medication.genericName.toLowerCase();
+    const displayName = getMedicationDisplayName(medication).toLowerCase();
+
+    return genericName === searchText || displayName === searchText;
+  });
+
+  if (exactMatch) {
+    showMedicationDetails(exactMatch.genericName);
+
+    if (medicationSelect) {
+      medicationSelect.value = exactMatch.genericName;
+    }
+
+    return;
+  }
+
+  if (filteredMedications.length === 1) {
+    const matchedMedication = filteredMedications[0];
+
+    showMedicationDetails(matchedMedication.genericName);
+
+    if (medicationSelect) {
+      medicationSelect.value = matchedMedication.genericName;
+    }
+
+    return;
+  }
+
+  if (searchText === "") {
+    showMedicationDetails("");
+  }
+}
+
+function initializeMedicationLibrary() {
+  populateMedicationClassFilter();
+  updateMedicationLibraryView();
+
+  const searchInput = document.getElementById("medicationSearch");
+  const classFilter = document.getElementById("medicationClassFilter");
+  const medicationSelect = document.getElementById("medicationLibrarySelect");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", updateMedicationLibraryView);
+  }
+
+  if (classFilter) {
+    classFilter.addEventListener("change", updateMedicationLibraryView);
+  }
+
+  if (medicationSelect) {
+    medicationSelect.addEventListener("change", function () {
+      showMedicationDetails(this.value);
+    });
+  }
+}
 function getSelectedMedication(selectId) {
   const select = document.getElementById(selectId);
   if (!select) return "";
   return select.value.trim();
+}
+
+function formatMedicationAmountForSummary(value, unit) {
+  const numericValue = Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return `${value} ${unit}`.trim();
+  }
+
+  const formattedValue = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 3
+  }).format(numericValue);
+
+  return `${formattedValue} ${unit}`.trim();
 }
 
 function formatDoseForSummary(dose, doseUnit) {
@@ -95,57 +321,36 @@ function buildDrawOrderSummary(medication, dose, doseUnit) {
 
 function buildInfusionOrderSummary(
   medication,
-  infusionType,
   dose,
   doseUnit,
+  drugAmount,
+  drugUnit,
   totalVolume,
+  diluent,
   duration,
-  durationUnit
+  durationUnit,
+  infusionType
 ) {
-  if (!medication) return "--";
+  let medicationName = "";
+
+  if (typeof medication === "string") {
+    medicationName = medication;
+  } else if (medication && medication.genericName) {
+    medicationName = getMedicationDisplayName(medication);
+  }
 
   const doseText = formatDoseForSummary(dose, doseUnit);
+  const drugAmountText = formatMedicationAmountForSummary(drugAmount, drugUnit);
+  const volumeText = formatMedicationAmountForSummary(totalVolume, "mL");
+  const diluentText = diluent ? ` ${diluent}` : "";
 
-  const volumeText =
-    totalVolume !== null && totalVolume > 0
-      ? `${formatNumber(totalVolume)} mL`
-      : "";
-
-  if (infusionType === "Continuous") {
-    if (doseText && volumeText) {
-      return `${medication} ${doseText} in ${volumeText} continuous`;
-    }
-
-    if (doseText) {
-      return `${medication} ${doseText} continuous`;
-    }
-
-    return `${medication} continuous`;
+  if (String(infusionType).toLowerCase() === "continuous") {
+    return `${medicationName} ${doseText} - ${drugAmountText} / ${volumeText}${diluentText} continuous`.trim();
   }
 
-  if (infusionType === "Timed Dose") {
-    const timeText = formatMinutesForSummary(duration, durationUnit);
+  const minutesText = formatMinutesForSummary(duration, durationUnit);
 
-    if (doseText && volumeText && timeText) {
-      return `${medication} ${doseText} in ${volumeText} over ${timeText}`;
-    }
-
-    if (doseText && volumeText) {
-      return `${medication} ${doseText} in ${volumeText}`;
-    }
-
-    if (doseText) {
-      return `${medication} ${doseText}`;
-    }
-
-    return medication;
-  }
-
-  if (doseText) {
-    return `${medication} ${doseText}`;
-  }
-
-  return medication;
+  return `${medicationName} ${doseText} - ${drugAmountText} / ${volumeText}${diluentText} over ${minutesText} minutes`.trim();
 }
 function getNumber(id) {
   const value = document.getElementById(id).value;
@@ -492,14 +697,23 @@ if (infusionWeightResult) {
 }
 
 if (infusionOrderSummaryResult) {
+  const infusionMedicationField = document.getElementById("infusionMedication");
+  const selectedMedicationName = infusionMedicationField ? infusionMedicationField.value : "";
+
+  const diluentField = document.getElementById("diluent");
+  const selectedDiluent = diluentField ? diluentField.value : "";
+
   infusionOrderSummaryResult.textContent = buildInfusionOrderSummary(
-    medication,
-    values.infusionType,
+    selectedMedicationName,
     values.dose,
     values.doseUnit,
+    values.drugAmount,
+    values.drugUnit,
     values.totalVolume,
+    selectedDiluent,
     values.duration,
-    values.durationUnit
+    values.durationUnit,
+    values.infusionType
   );
 }
 statusResult.classList.remove("status-ready", "status-check");
@@ -1065,14 +1279,23 @@ if (emsWeightResult) {
 }
 
 if (emsOrderSummaryResult) {
+  const emsMedicationField = document.getElementById("emsMedication");
+  const selectedMedicationName = emsMedicationField ? emsMedicationField.value : "";
+
+  const emsDiluentField = document.getElementById("emsDiluent");
+  const selectedDiluent = emsDiluentField ? emsDiluentField.value : "";
+
   emsOrderSummaryResult.textContent = buildInfusionOrderSummary(
-    medication,
-    values.infusionType,
+    selectedMedicationName,
     values.dose,
     values.doseUnit,
+    values.drugAmount,
+    values.drugUnit,
     values.totalVolume,
+    selectedDiluent,
     values.duration,
-    values.durationUnit
+    values.durationUnit,
+    values.infusionType
   );
 }
 
@@ -1173,6 +1396,7 @@ function clearEMS() {
     "emsDose",
     "emsDrugAmount",
     "emsTotalVolume",
+    "emsDiluent",
     "emsVtbi",
     "emsDuration"
   ];
@@ -1233,32 +1457,52 @@ function showSection(section) {
   const infusionSection = document.getElementById("infusionSection");
   const drawSection = document.getElementById("drawSection");
   const emsSection = document.getElementById("emsSection");
+  const medicationLibrarySection = document.getElementById("medicationLibrarySection");
 
   const showInfusion = document.getElementById("showInfusion");
   const showDraw = document.getElementById("showDraw");
   const showEMS = document.getElementById("showEMS");
+  const showMedicationLibrary = document.getElementById("showMedicationLibrary");
 
   infusionSection.classList.add("hidden");
   drawSection.classList.add("hidden");
   emsSection.classList.add("hidden");
+  medicationLibrarySection.classList.add("hidden");
 
   showInfusion.classList.remove("active");
   showDraw.classList.remove("active");
   showEMS.classList.remove("active");
+  showMedicationLibrary.classList.remove("active");
+
+  document.body.classList.remove(
+    "tab-draw",
+    "tab-infusion",
+    "tab-ems",
+    "tab-library"
+  );
 
   if (section === "infusion") {
     infusionSection.classList.remove("hidden");
     showInfusion.classList.add("active");
+    document.body.classList.add("tab-infusion");
   }
 
   if (section === "draw") {
     drawSection.classList.remove("hidden");
     showDraw.classList.add("active");
+    document.body.classList.add("tab-draw");
   }
 
   if (section === "ems") {
     emsSection.classList.remove("hidden");
     showEMS.classList.add("active");
+    document.body.classList.add("tab-ems");
+  }
+
+  if (section === "medicationLibrary") {
+    medicationLibrarySection.classList.remove("hidden");
+    showMedicationLibrary.classList.add("active");
+    document.body.classList.add("tab-library");
   }
 }
 function clearInfusion() {
@@ -1268,6 +1512,7 @@ function clearInfusion() {
     "dose",
     "drugAmount",
     "totalVolume",
+    "diluent",
     "vtbi",
     "duration"
   ];
@@ -1339,6 +1584,7 @@ function clearInfusion() {
 const showInfusionButton = document.getElementById("showInfusion");
 const showDrawButton = document.getElementById("showDraw");
 const showEMSButton = document.getElementById("showEMS");
+const showMedicationLibraryButton = document.getElementById("showMedicationLibrary");
 
 if (showInfusionButton) {
   showInfusionButton.addEventListener("click", function () {
@@ -1355,6 +1601,11 @@ if (showDrawButton) {
 if (showEMSButton) {
   showEMSButton.addEventListener("click", function () {
     showSection("ems");
+  });
+}
+if (showMedicationLibraryButton) {
+  showMedicationLibraryButton.addEventListener("click", function () {
+    showSection("medicationLibrary");
   });
 }
 
@@ -1405,5 +1656,7 @@ if (typeof updateEmsDoseUnits === "function") {
 }
 
 populateAllMedicationDropdowns();
+
+initializeMedicationLibrary();
 
 showSection("draw");
